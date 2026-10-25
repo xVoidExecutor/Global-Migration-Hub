@@ -155,6 +155,36 @@ export function ApplicationModal({
     setTimeout(() => setProfileSaved(false), 1500)
   }
 
+  // --- Tracking Link (direct-access link, bypasses passport/NID + DOB) ---
+  const [linkCopied, setLinkCopied] = useState(false)
+  const trackingLinkUrl =
+    app.trackingLinkToken && typeof window !== "undefined"
+      ? `${window.location.origin}/track?token=${app.trackingLinkToken}`
+      : ""
+
+  function handleGenerateLink() {
+    const token =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID().replace(/-/g, "")
+        : Math.random().toString(36).slice(2) + Date.now().toString(36)
+    onUpdateProfile(app.id, { trackingLinkToken: token })
+  }
+
+  function handleRevokeLink() {
+    onUpdateProfile(app.id, { trackingLinkToken: "" })
+  }
+
+  async function handleCopyLink() {
+    if (!trackingLinkUrl) return
+    try {
+      await navigator.clipboard.writeText(trackingLinkUrl)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 1500)
+    } catch {
+      // Clipboard API unavailable — the read-only input above is still manually selectable/copyable.
+    }
+  }
+
   function handleCancelProfileEdit() {
     setProfileForm({
       fullName: app.fullName,
@@ -536,6 +566,45 @@ export function ApplicationModal({
                   </Button>
                 </div>
               </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-border p-4">
+            <h4 className="mb-1 text-sm font-semibold text-foreground">Tracking Link</h4>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Share this link directly with the applicant for instant access to their status — no Passport,
+              National ID, or Date of Birth needed. Passport/NID + DOB still work as the normal fallback for
+              anyone who searches without the link.
+            </p>
+            {app.trackingLinkToken ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  readOnly
+                  value={trackingLinkUrl}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="flex-1 truncate rounded-lg border border-input bg-background px-2.5 py-1.5 font-mono text-xs text-foreground"
+                />
+                <div className="flex shrink-0 gap-2">
+                  <Button type="button" variant="outline" onClick={handleCopyLink} className="h-8 rounded-lg px-3 text-xs">
+                    {linkCopied ? "Copied ✓" : "Copy"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleGenerateLink} className="h-8 rounded-lg px-3 text-xs">
+                    Regenerate
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRevokeLink}
+                    className="h-8 rounded-lg px-3 text-xs text-destructive hover:text-destructive"
+                  >
+                    Revoke
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button type="button" onClick={handleGenerateLink} className="h-9 rounded-xl px-4 text-xs">
+                Generate Tracking Link
+              </Button>
             )}
           </section>
 
