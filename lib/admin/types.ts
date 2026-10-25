@@ -54,6 +54,12 @@ export interface Application {
   // form (which never sets this) keep working — getTrackingMethod() treats a missing
   // value as "passport".
   trackingMethod?: TrackingMethod
+  // A secret, unguessable token that grants direct access to this applicant's
+  // /track profile via a shareable link — no passport/NID/DOB needed when the
+  // link itself is used. Generated/revoked only from the admin panel. Passport,
+  // National ID and Date of Birth still work as the normal fallback lookup
+  // (per trackingMethod above) for anyone searching without the link.
+  trackingLinkToken?: string
   nationality: string
   email: string
   phone: string
