@@ -1,9 +1,10 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react"
-import { Check, Copy, Loader2, Wallet } from "lucide-react"
+import { Check, CheckCircle2, Copy, Loader2, Wallet } from "lucide-react"
 import { formatCountry } from "@/lib/countries"
 import { ANY_COUNTRY, type PaymentMethod, type PaymentSubmission } from "@/lib/payments"
+import { getPaymentBrand } from "@/lib/payment-brand"
 import type { Application } from "@/lib/admin/types"
 
 export interface PaymentCredentials {
@@ -40,6 +41,9 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
   const [copied, setCopied] = useState(false)
 
   const { passport, nationalId, dob } = credentials
+  const feeEnabled = app.serviceFeeEnabled ?? false
+  const feeLabel = app.serviceFeeLabel?.trim() || "Service Fee"
+  const feeAmount = app.serviceFeeAmount?.trim() ?? ""
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
@@ -104,6 +108,8 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
   )
 
   const selected = visible.find((m) => m.id === selectedId) ?? null
+  const brand = selected ? getPaymentBrand(selected) : null
+  const [justSubmitted, setJustSubmitted] = useState(false)
 
   async function copyNumber(value: string) {
     try {
@@ -143,7 +149,11 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
       setTransactionId("")
       setSenderNumber("")
       setAmount("")
-      setSelectedId(null)
+      setJustSubmitted(true)
+      setTimeout(() => {
+        setJustSubmitted(false)
+        setSelectedId(null)
+      }, 1600)
       await loadPayments()
     } catch {
       setFeedback({ type: "error", text: "Something went wrong. Please try again." })
@@ -151,6 +161,9 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
       setSubmitting(false)
     }
   }
+
+  // Payment is only shown when the admin has turned it on for this specific application.
+  if (!feeEnabled) return null
 
   return (
     <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -162,6 +175,11 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
           <h3 className="text-sm font-semibold text-foreground">Payment</h3>
           <p className="text-xs text-muted-foreground">Pay manually, then submit your Transaction ID to verify.</p>
         </div>
+      </div>
+
+      <div className="mb-5 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-primary">{feeLabel} Required</p>
+        {feeAmount && <p className="mt-0.5 text-xl font-semibold text-foreground">{feeAmount}</p>}
       </div>
 
       {loadingMethods ? (
@@ -200,109 +218,153 @@ export function PaymentSection({ app, credentials }: { app: Application; credent
 
           <div>
             <p className="mb-2 text-xs font-medium text-muted-foreground">Choose a payment method</p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {visible.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedId(m.id)
-                    setFeedback(null)
-                  }}
-                  className={`rounded-xl border px-3 py-3 text-left text-sm font-medium transition ${
-                    selectedId === m.id
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border bg-background text-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {m.name}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {visible.map((m) => {
+                const b = getPaymentBrand(m)
+                const isSelected = selectedId === m.id
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedId(m.id)
+                      setFeedback(null)
+                      if (feeAmount) setAmount(feeAmount)
+                    }}
+                    className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left text-sm font-semibold transition-all duration-200 ${
+                      isSelected
+                        ? `scale-[1.02] border-transparent ${b.tint} shadow-sm ring-1 ring-black/5`
+                        : "border-border bg-background text-foreground hover:-translate-y-0.5 hover:border-border hover:shadow-sm"
+                    }`}
+                  >
+                    <span
+                      className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-[1.1rem] leading-none shadow-sm ${b.gradient}`}
+                    >
+                      {b.icon}
+                    </span>
+                    <span className={isSelected ? b.text : "text-foreground"}>{m.name}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {selected && (
-            <div className="space-y-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Send payment to ({selected.name})
-                </p>
-                <div className="mt-1 flex items-center justify-between gap-3">
-                  <p className="break-all font-mono text-lg font-semibold text-foreground">{selected.accountNumber}</p>
-                  <button
-                    type="button"
-                    onClick={() => copyNumber(selected.accountNumber)}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary"
-                  >
-                    {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                    {copied ? "Copied" : "Copy"}
-                  </button>
+          {selected && brand && (
+            <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300 overflow-hidden rounded-2xl border border-border shadow-sm">
+              {justSubmitted ? (
+                <div className={`flex flex-col items-center gap-3 px-6 py-10 text-center text-white ${brand.gradient}`}>
+                  <span className="flex size-14 animate-in zoom-in-50 items-center justify-center rounded-full bg-white/20 duration-500">
+                    <CheckCircle2 className="size-8" />
+                  </span>
+                  <p className="text-base font-semibold">Submitted for verification</p>
+                  <p className="text-xs text-white/85">We will confirm your {selected.name} payment shortly.</p>
                 </div>
-                {selected.accountName && (
-                  <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">{selected.accountName}</p>
-                )}
-                {selected.instructions && (
-                  <p className="mt-2 whitespace-pre-line text-xs text-foreground/80">{selected.instructions}</p>
-                )}
-              </div>
+              ) : (
+                <>
+                  {/* Brand header — mirrors the method's color so applicants instantly recognize
+                      which wallet they chose. This is our own form, not the provider's app. */}
+                  <div className={`flex items-center gap-3 px-4 py-3.5 text-white ${brand.gradient}`}>
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/15 text-[1.2rem] leading-none shadow-inner">
+                      {brand.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{selected.name}</p>
+                      <p className="text-[11px] text-white/80">Send payment manually to this number</p>
+                    </div>
+                  </div>
 
-              <form onSubmit={handleSubmit} className="space-y-3 border-t border-dashed border-border pt-4">
-                <p className="text-xs text-muted-foreground">
-                  After you have paid, enter the Transaction ID from your payment confirmation.
-                </p>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-trx">
-                    Transaction ID <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    id="pay-trx"
-                    value={transactionId}
-                    onChange={(e) => setTransactionId(e.target.value)}
-                    required
-                    maxLength={40}
-                    autoComplete="off"
-                    placeholder="e.g. 9A7B6C5D4E"
-                    className={`${inputClass} font-mono uppercase`}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-amount">
-                      Amount paid
-                    </label>
-                    <input
-                      id="pay-amount"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      maxLength={20}
-                      inputMode="decimal"
-                      placeholder="Optional"
-                      className={inputClass}
-                    />
+                  <div className="space-y-4 bg-card p-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Send money to</p>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <p className="break-all font-mono text-lg font-semibold text-foreground">
+                          {selected.accountNumber}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => copyNumber(selected.accountNumber)}
+                          className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                            copied
+                              ? "border-tip-green/40 bg-tip-green text-tip-green-foreground"
+                              : "border-border bg-background text-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          {copied ? (
+                            <Check className="size-3.5 animate-in zoom-in-50 duration-200" />
+                          ) : (
+                            <Copy className="size-3.5" />
+                          )}
+                          {copied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                      {selected.accountName && (
+                        <p className="mt-1 whitespace-pre-line text-xs text-muted-foreground">{selected.accountName}</p>
+                      )}
+                      {selected.instructions && (
+                        <p className="mt-2 whitespace-pre-line text-xs text-foreground/80">{selected.instructions}</p>
+                      )}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-3 border-t border-dashed border-border pt-4">
+                      <p className="text-xs text-muted-foreground">
+                        After you have paid, enter the Transaction ID from your payment confirmation message.
+                      </p>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-trx">
+                          Transaction ID <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          id="pay-trx"
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                          required
+                          maxLength={40}
+                          autoComplete="off"
+                          placeholder="e.g. 9A7B6C5D4E"
+                          className={`${inputClass} font-mono uppercase focus:border-current ${brand.text}`}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-amount">
+                            Amount paid
+                          </label>
+                          <input
+                            id="pay-amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            maxLength={20}
+                            inputMode="decimal"
+                            placeholder="Optional"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-sender">
+                            Your {selected.type === "bank" ? "account" : "wallet"} number
+                          </label>
+                          <input
+                            id="pay-sender"
+                            value={senderNumber}
+                            onChange={(e) => setSenderNumber(e.target.value)}
+                            maxLength={40}
+                            placeholder="Optional"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={submitting || !transactionId.trim()}
+                        className={`flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-white shadow-sm transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${brand.gradient}`}
+                      >
+                        {submitting && <Loader2 className="size-4 animate-spin" />}
+                        Submit for verification
+                      </button>
+                    </form>
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-foreground" htmlFor="pay-sender">
-                      Your {selected.type === "bank" ? "account" : "wallet"} number
-                    </label>
-                    <input
-                      id="pay-sender"
-                      value={senderNumber}
-                      onChange={(e) => setSenderNumber(e.target.value)}
-                      maxLength={40}
-                      placeholder="Optional"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting || !transactionId.trim()}
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submitting && <Loader2 className="size-4 animate-spin" />}
-                  Submit for verification
-                </button>
-              </form>
+                </>
+              )}
             </div>
           )}
 
