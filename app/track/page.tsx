@@ -52,14 +52,17 @@ function initials(name: string) {
 function TrackPageContent() {
   const searchParams = useSearchParams()
   const expectedCountry = searchParams.get("country") || ""
+  const tokenParam = searchParams.get("token") || ""
   const passportParam = searchParams.get("passport") || ""
   const nationalIdParam = searchParams.get("nationalId") || ""
   const dobParam = searchParams.get("dob") || ""
   // Whichever identifier the user searched with (passport or national ID)
   const identifierParam = passportParam || nationalIdParam
   const identifierLabel = passportParam ? "passport number" : "national ID number"
-  // A search only runs once BOTH the identifier and date of birth are present.
-  const canSearch = !!identifierParam && !!dobParam
+  // A tracking-link token (admin-generated, shared directly with the applicant) grants
+  // access on its own — no passport/NID or date of birth needed when it's present.
+  // Without a token, both the identifier AND date of birth are required as before.
+  const canSearch = !!tokenParam || (!!identifierParam && !!dobParam)
 
   const [result, setResult] = useState<Application | null>(null)
   const [error, setError] = useState("")
@@ -76,11 +79,13 @@ function TrackPageContent() {
       setError("")
       setHasSearched(false)
       try {
-        const params = new URLSearchParams(
-          passportParam ? { passport: passportParam } : { nationalId: nationalIdParam },
-        )
-        params.set("dob", dobParam)
-        if (expectedCountry) params.set("country", expectedCountry)
+        const params = tokenParam
+          ? new URLSearchParams({ token: tokenParam })
+          : new URLSearchParams(passportParam ? { passport: passportParam } : { nationalId: nationalIdParam })
+        if (!tokenParam) {
+          params.set("dob", dobParam)
+          if (expectedCountry) params.set("country", expectedCountry)
+        }
         const res = await fetch(`/api/visa-status?${params.toString()}`)
         if (cancelled) return
         if (res.ok) {
@@ -98,6 +103,8 @@ function TrackPageContent() {
           setResult(null)
           if (res.status === 429) {
             setError("Too many attempts. Please wait a few minutes and try again.")
+          } else if (tokenParam) {
+            setError("This tracking link is invalid or has been revoked. Please ask your consultant for a new link.")
           } else if (body?.error === "country_mismatch" && expectedCountry) {
             setError(
               `No ${expectedCountry} application was found for that ${identifierLabel} and date of birth. Please check the country you applied for and try again.`,
@@ -123,7 +130,7 @@ function TrackPageContent() {
     return () => {
       cancelled = true
     }
-  }, [canSearch, passportParam, nationalIdParam, dobParam, expectedCountry, identifierLabel])
+  }, [canSearch, tokenParam, passportParam, nationalIdParam, dobParam, expectedCountry, identifierLabel])
 
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-secondary">
