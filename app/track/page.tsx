@@ -6,6 +6,8 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Search, X, Sparkles } from "lucide-react"
 import { EnquireModal } from "@/components/enquire-modal"
+import { EmployerCard } from "@/components/employer-card"
+import { hasEmployerInfo } from "@/lib/companies"
 import { PaymentSection, type PaymentCredentials } from "@/components/payment-section"
 import { formatCountry } from "@/lib/countries"
 import { effectiveStage, STAGE_LABELS, type Application, type AppDocument } from "@/lib/admin/types"
@@ -414,19 +416,22 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             <h1 className="mt-1 break-words font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
               {app.fullName}
             </h1>
-            {app.employerName && (
-              <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-secondary/60 py-1.5 pl-1.5 pr-4 shadow-sm">
-                <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background p-0.5 ring-1 ring-border/60">
-                  {app.employerLogoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
-                  ) : (
-                    <Icon3D name="building" className="size-5" />
-                  )}
-                </span>
-                <span className="truncate text-xs font-medium text-foreground sm:text-sm">{app.employerName}</span>
-              </div>
-            )}
+            {app.employerName &&
+              (hasEmployerInfo(app.employerInfo) ? (
+                <EmployerCard name={app.employerName} logoUrl={app.employerLogoUrl} info={app.employerInfo ?? {}} />
+              ) : (
+                <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-secondary/60 py-1.5 pl-1.5 pr-4 shadow-sm">
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 ring-1 ring-border/60">
+                    {app.employerLogoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
+                    ) : (
+                      <Icon3D name="building" className="size-5" />
+                    )}
+                  </span>
+                  <span className="truncate text-xs font-medium text-foreground sm:text-sm">{app.employerName}</span>
+                </div>
+              ))}
           </div>
 
           <div className="grid w-full grid-cols-2 gap-x-4 gap-y-4 border-t border-dashed border-border pt-5 text-left">
