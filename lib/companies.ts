@@ -1,231 +1,197 @@
-"use client"
+// Shared (client + server) types and helpers for the permanent company list.
+// Admins pick a saved company (official name, original logo, ABN and other details) or type a new one manually.
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { Building2, Trash2, Upload, X } from "lucide-react"
-import { deleteCompany, getCompanies } from "@/lib/admin/companies"
-import { uploadAdminFile } from "@/lib/admin/upload"
-import { normalizeCompanyName, type Company } from "@/lib/companies"
-
-const MAX_LOGO_BYTES = 4 * 1024 * 1024 // 4 MB
-
-export interface CompanyValue {
-  name: string
-  logoUrl: string
+/** Public company details. Shown on the applicant's visa-check (/track) profile. */
+export interface EmployerInfo {
+  /** Trading / brand name, e.g. "Costa". */
+  tradingName?: string
+  /** Australian Business Number, digits only (11). */
+  abn?: string
+  /** Australian Company Number, digits only (9). */
+  acn?: string
+  /** e.g. "Australian Private Company". */
+  entityType?: string
+  address?: string
+  phone?: string
+  email?: string
+  website?: string
+  /** Short description of the business. */
+  about?: string
 }
 
-/**
- * Company name + logo field for the admin panel.
- *
- * - Pick a company from the permanent saved list (name AND its original logo are filled in), or
- * - type any name manually and upload a logo.
- * - The logo is shown exactly as uploaded (not cropped). Parents call `rememberCompany()` when
- *   the application is saved so every company ends up in the saved list automatically.
- */
-export function CompanyPicker({
-  name,
-  logoUrl,
-  onChange,
-  idPrefix = "company",
-}: {
+export const EMPLOYER_INFO_FIELDS = [
+  "tradingName",
+  "abn",
+  "acn",
+  "entityType",
+  "address",
+  "phone",
+  "email",
+  "website",
+  "about",
+] as const satisfies readonly (keyof EmployerInfo)[]
+
+export interface Company extends EmployerInfo {
+  /** Stable id (random for new companies, fixed for the permanent pinned ones). */
+  id: string
+  /** Full official (legal) name. */
   name: string
+  /** Original uploaded logo URL (Vercel Blob). Empty string when no logo has been saved yet. */
   logoUrl: string
-  onChange: (value: CompanyValue) => void
-  idPrefix?: string
-}) {
-  const [companies, setCompanies] = useState<Company[]>([])
-  const [focused, setFocused] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState("")
-  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Other names applicants may type for the same company (e.g. "Costa"). Matched case-insensitively. */
+  aliases?: string[]
+  /** Pinned companies are listed first, in pinOrder. */
+  pinned?: boolean
+  pinOrder?: number
+  /** Permanent companies cannot be deleted or unpinned. */
+  locked?: boolean
+  createdAt: string
+  updatedAt: string
+}
 
-  useEffect(() => {
-    let cancelled = false
-    getCompanies().then((list) => {
-      if (!cancelled) setCompanies(list)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+/** Redis hash: field = company id, value = JSON of Company. Never expires. */
+export const COMPANIES_KEY = "gmh:companies"
 
-  const query = normalizeCompanyName(name)
+/**
+ * Companies that are always pinned at the top of the list. Created automatically the first time the
+ * list is read, and never overwritten afterwards — edit them from the admin panel.
+ */
+export const DEFAULT_PINNED_COMPANIES: Omit<Company, "createdAt" | "updatedAt">[] = [
+  {
+    id: "pinned-rts",
+    name: "RTS",
+    logoUrl: "",
+    aliases: ["RTS"],
+    pinned: true,
+    pinOrder: 1,
+    locked: true,
+  },
+  {
+    id: "pinned-costa",
+    name: "Costa Group Holdings Pty Ltd",
+    logoUrl: "",
+    aliases: ["Costa", "Costa Group", "Costa Group Holdings", "Costa Group Holdings Limited"],
+    pinned: true,
+    pinOrder: 2,
+    locked: true,
+    tradingName: "Costa",
+    abn: "68151363129",
+    acn: "151363129",
+    entityType: "Australian Private Company",
+    address: "Level 5, 818 Bourke Street, Docklands, Victoria 3008, Australia",
+    phone: "+61 3 8363 9000",
+    email: "info@costagroup.com.au",
+    website: "https://costagroup.com.au",
+  },
+]
 
-  const exactMatch = useMemo(
-    () => (query ? companies.find((c) => normalizeCompanyName(c.name) === query) : undefined),
-    [companies, query],
-  )
+export function normalizeCompanyName(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase()
+}
 
-  const suggestions = useMemo(() => {
-    const list = query
-      ? companies.filter((c) => normalizeCompanyName(c.name).includes(query) && c !== exactMatch)
-      : companies
-    return list.slice(0, 8)
-  }, [companies, query, exactMatch])
-
-  // A saved logo exists for this exact name, but the current form has no logo yet.
-  const canUseSavedLogo = !!exactMatch?.logoUrl && !logoUrl
-
-  function pick(company: Company) {
-    onChange({ name: company.name, logoUrl: company.logoUrl || logoUrl })
-    setFocused(false)
-  }
-
-  async function handleLogoSelected(files: FileList | null) {
-    const file = files?.[0]
-    if (!file) return
-    setError("")
-    if (!file.type.startsWith("image/")) {
-      setError("Please choose an image file.")
-      return
-    }
-    if (file.size > MAX_LOGO_BYTES) {
-      setError("Logo is too large. Please use an image under 4 MB.")
-      return
-    }
-    setUploading(true)
-    try {
-      // Uploaded as-is: the original file is stored, no resizing or cropping.
-      const url = await uploadAdminFile(file)
-      onChange({ name, logoUrl: url })
-    } catch {
-      setError("Could not upload that image. Please try again.")
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  async function handleDelete(company: Company) {
-    if (!window.confirm(`Remove "${company.name}" from the saved company list?\n\nExisting applications keep their company name and logo.`)) {
-      return
-    }
-    const ok = await deleteCompany(company.id)
-    if (ok) setCompanies((list) => list.filter((c) => c.id !== company.id))
-    else setError("Could not remove that company. Please try again.")
-  }
-
-  function handleBlur() {
-    // Delay so a tap on a suggestion registers before the list closes.
-    blurTimer.current = setTimeout(() => setFocused(false), 180)
-  }
-
-  function handleFocus() {
-    if (blurTimer.current) clearTimeout(blurTimer.current)
-    setFocused(true)
-  }
-
+/** Finds a saved company whose official name or one of its aliases equals `name`. */
+export function matchCompany<T extends Pick<Company, "name" | "aliases">>(
+  companies: T[],
+  name: string | undefined,
+): T | undefined {
+  const target = normalizeCompanyName(name ?? "")
+  if (!target) return undefined
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-      <div className="flex items-center gap-3 sm:flex-col sm:items-center">
-        <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white p-1.5">
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="Company logo" className="size-full object-contain" />
-          ) : (
-            <Building2 className="size-7 text-muted-foreground" aria-hidden="true" />
-          )}
-        </div>
-        <div className="flex flex-col items-start gap-1.5 sm:items-center">
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1.5 text-xs text-foreground hover:bg-muted">
-            <Upload className="size-3.5" aria-hidden="true" />
-            {uploading ? "Uploading…" : logoUrl ? "Change logo" : "Upload logo"}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              disabled={uploading}
-              onChange={(e) => {
-                handleLogoSelected(e.target.files)
-                e.target.value = ""
-              }}
-            />
-          </label>
-          {logoUrl && (
-            <button
-              type="button"
-              onClick={() => onChange({ name, logoUrl: "" })}
-              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive"
-            >
-              <X className="size-3" aria-hidden="true" /> Remove logo
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <label htmlFor={`${idPrefix}-name`} className="mb-1.5 block text-xs font-medium text-muted-foreground">
-          Employer / Company Name
-        </label>
-        <input
-          id={`${idPrefix}-name`}
-          type="text"
-          autoComplete="off"
-          value={name}
-          maxLength={120}
-          onChange={(e) => onChange({ name: e.target.value, logoUrl })}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder="Type a name, or pick a saved company below"
-          className="w-full rounded-lg border border-input bg-background px-2.5 py-2 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        />
-
-        {canUseSavedLogo && exactMatch && (
-          <button
-            type="button"
-            onClick={() => pick(exactMatch)}
-            className="mt-2 flex w-full items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-2.5 py-2 text-left text-xs text-foreground hover:bg-primary/10"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={exactMatch.logoUrl} alt="" className="size-8 shrink-0 rounded-md border border-border bg-white object-contain p-0.5" />
-            <span>
-              Use the saved logo for <strong>{exactMatch.name}</strong>
-            </span>
-          </button>
-        )}
-
-        {focused && suggestions.length > 0 && (
-          <ul className="mt-2 max-h-52 divide-y divide-border overflow-y-auto rounded-lg border border-border bg-background" aria-label="Saved companies">
-            {suggestions.map((c) => (
-              <li key={c.id} className="flex items-center gap-1 pr-1">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => pick(c)}
-                  className="flex min-w-0 flex-1 items-center gap-2.5 px-2.5 py-2 text-left hover:bg-muted"
-                >
-                  <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-white p-0.5">
-                    {c.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.logoUrl} alt="" className="size-full object-contain" />
-                    ) : (
-                      <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span className="truncate text-sm text-foreground">{c.name}</span>
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleDelete(c)}
-                  className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  aria-label={`Remove ${c.name} from saved list`}
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <p className="mt-1.5 text-[11px] text-muted-foreground">
-          Saved automatically to your company list when you save, so you can reuse the name and original logo next time.
-          Shown next to the applicant&apos;s name on their tracking profile.
-        </p>
-        {error && (
-          <p className="mt-1 text-xs text-destructive" role="alert">
-            {error}
-          </p>
-        )}
-      </div>
-    </div>
+    companies.find((c) => normalizeCompanyName(c.name) === target) ??
+    companies.find((c) => (c.aliases ?? []).some((a) => normalizeCompanyName(a) === target))
   )
+}
+
+/** Pinned first (by pinOrder), then A–Z. */
+export function sortCompanies<T extends Pick<Company, "name" | "pinned" | "pinOrder">>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1
+    if (a.pinned && b.pinned) {
+      const diff = (a.pinOrder ?? 999) - (b.pinOrder ?? 999)
+      if (diff !== 0) return diff
+    }
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+  })
+}
+
+export function digitsOnly(value: string | undefined): string {
+  return (value ?? "").replace(/\D/g, "")
+}
+
+/** "68151363129" -> "68 151 363 129" (unchanged if it is not 11 digits). */
+export function formatAbn(value: string | undefined): string {
+  const d = digitsOnly(value)
+  if (d.length !== 11) return (value ?? "").trim()
+  return `${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5, 8)} ${d.slice(8)}`
+}
+
+/** "151363129" -> "151 363 129". */
+export function formatAcn(value: string | undefined): string {
+  const d = digitsOnly(value)
+  if (d.length !== 9) return (value ?? "").trim()
+  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`
+}
+
+/** Official ATO checksum for an Australian Business Number. */
+export function isValidAbn(value: string | undefined): boolean {
+  const d = digitsOnly(value)
+  if (d.length !== 11) return false
+  const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+  const digits = d.split("").map(Number)
+  digits[0] -= 1
+  const sum = digits.reduce((acc, n, i) => acc + n * weights[i], 0)
+  return sum % 89 === 0
+}
+
+/** Link to the free government ABN Lookup (ABR) entry, so anyone can verify the company. */
+export function abrLookupUrl(abn: string | undefined): string | null {
+  const d = digitsOnly(abn)
+  return d.length === 11 ? `https://abr.business.gov.au/ABN/View?abn=${d}` : null
+}
+
+export function hasEmployerInfo(info: EmployerInfo | undefined | null): boolean {
+  if (!info) return false
+  return EMPLOYER_INFO_FIELDS.some((k) => typeof info[k] === "string" && info[k]!.trim() !== "")
+}
+
+/** Picks only the details from a company (used when filling an application from the saved list). */
+export function pickEmployerInfo(source: EmployerInfo | undefined | null): EmployerInfo {
+  const out: EmployerInfo = {}
+  if (!source) return out
+  for (const key of EMPLOYER_INFO_FIELDS) {
+    const v = source[key]
+    if (typeof v === "string" && v.trim()) out[key] = v
+  }
+  return out
+}
+
+const FIELD_MAX: Record<keyof EmployerInfo, number> = {
+  tradingName: 120,
+  abn: 11,
+  acn: 9,
+  entityType: 80,
+  address: 250,
+  phone: 40,
+  email: 120,
+  website: 200,
+  about: 600,
+}
+
+/** Validates/normalizes untrusted company details (from a request body). Unknown keys are dropped. */
+export function cleanEmployerInfo(input: unknown): EmployerInfo {
+  const out: EmployerInfo = {}
+  if (!input || typeof input !== "object") return out
+  const src = input as Record<string, unknown>
+  for (const key of EMPLOYER_INFO_FIELDS) {
+    const raw = src[key]
+    if (typeof raw !== "string") continue
+    let v = raw.trim()
+    if (key === "abn") v = digitsOnly(v)
+    else if (key === "acn") v = digitsOnly(v)
+    else if (key === "email") v = v.toLowerCase()
+    else if (key === "website" && v && !/^https?:\/\//i.test(v)) v = `https://${v}`
+    if (key === "website" && v && !/^https?:\/\/\S+$/i.test(v)) continue
+    out[key] = v.slice(0, FIELD_MAX[key])
+  }
+  return out
 }
