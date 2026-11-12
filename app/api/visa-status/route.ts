@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getRedis } from "@/lib/admin/redis"
 import { getTrackingMethod, type Application } from "@/lib/admin/types"
 import { rateLimit } from "@/lib/rate-limit"
+import { loadCompanies } from "@/lib/companies-server"
+import { matchCompany, pickEmployerInfo, cleanEmployerInfo } from "@/lib/companies"
 
 export const dynamic = "force-dynamic"
 
@@ -71,5 +73,23 @@ export async function GET(request: Request) {
   const { internalNotes, trackingLinkToken, ...publicApplication } = match
   void internalNotes
   void trackingLinkToken
+
+  // Attach the saved company's official name, logo and details (ABN, address, contact…) so the
+  // applicant's profile always shows the current information from the permanent company list.
+  // Failing to load the list must never break the status lookup.
+  try {
+    const company = matchCompany(await loadCompanies(redis), publicApplication.employerName)
+    if (company) {
+      return NextResponse.json({
+        ...publicApplication,
+        employerName: company.name,
+        employerLogoUrl: publicApplication.employerLogoUrl || company.logoUrl,
+        employerInfo: { ...cleanEmployerInfo(publicApplication.employerInfo), ...pickEmployerInfo(company) },
+      })
+    }
+  } catch (err) {
+    console.error("Could not attach company details", err)
+  }
+
   return NextResponse.json(publicApplication)
 }
