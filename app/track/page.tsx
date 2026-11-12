@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Loader2, Search, X, Sparkles } from "lucide-react"
 import { EnquireModal } from "@/components/enquire-modal"
 import { EmployerCard } from "@/components/employer-card"
-import { hasEmployerInfo } from "@/lib/companies"
 import { PaymentSection, type PaymentCredentials } from "@/components/payment-section"
 import { formatCountry } from "@/lib/countries"
 import { effectiveStage, STAGE_LABELS, type Application, type AppDocument } from "@/lib/admin/types"
@@ -135,51 +134,60 @@ function TrackPageContent() {
   }, [canSearch, tokenParam, passportParam, nationalIdParam, dobParam, expectedCountry, identifierLabel])
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-secondary">
-      {/* Portal watermark — sits behind the entire /track page */}
-      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <Image
-          src="/images/track-watermark.webp"
-          alt=""
-          fill
-          sizes="1280px"
-          quality={60}
-          className="object-cover opacity-[0.22]"
-        />
-        <div className="absolute inset-0 bg-secondary/80" />
-      </div>
+    <main className={`relative min-h-screen overflow-x-hidden ${result ? "bg-white" : "bg-secondary"}`}>
+      {/* Portal watermark — shown on the search / loading / not-found screens only.
+          Hidden on the applicant profile (result) so that page is plain white. */}
+      {!result && (
+        <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+          <Image
+            src="/images/track-watermark.webp"
+            alt=""
+            fill
+            sizes="1280px"
+            quality={60}
+            className="object-cover opacity-[0.22]"
+          />
+          <div className="absolute inset-0 bg-secondary/80" />
+        </div>
+      )}
 
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+      {/* Transparent glass header with the site name */}
+      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/50 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="Global Migration Hub home">
-            <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary">
+            <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary shadow-md shadow-primary/20 ring-1 ring-white/60">
               <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
             </span>
-            <span className="truncate font-serif text-lg font-semibold leading-tight text-foreground">
-              Global Migration Hub
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate bg-gradient-to-r from-primary via-sky-500 to-primary bg-clip-text font-serif text-lg font-bold tracking-tight text-transparent sm:text-xl">
+                Global Migration Hub
+              </span>
+              <span className="truncate text-[9px] font-medium uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px]">
+                Visa &amp; Immigration Consultancy
+              </span>
             </span>
           </Link>
           {result ? (
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/60 px-3 py-1.5 text-sm font-medium text-muted-foreground ring-1 ring-border/60 backdrop-blur hover:text-foreground"
             >
               <Search className="size-4" /> New search
             </button>
           ) : (
             <Link
               href="/"
-              className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/60 px-3 py-1.5 text-sm font-medium text-muted-foreground ring-1 ring-border/60 backdrop-blur hover:text-foreground"
             >
               <ArrowLeft className="size-4" /> Back home
             </Link>
           )}
         </div>
-      </div>
+      </header>
 
       {loading ? (
-        <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 duration-500">
+        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 duration-500">
           <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
           <p className="mt-4 text-sm text-muted-foreground">
             Checking your {expectedCountry ? `${expectedCountry} ` : ""}application status…
@@ -195,7 +203,7 @@ function TrackPageContent() {
           }}
         />
       ) : canSearch && hasSearched ? (
-        <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
           <div className="flex size-16 items-center justify-center">
             <Icon3D name="alert" />
           </div>
@@ -210,7 +218,7 @@ function TrackPageContent() {
           </button>
         </div>
       ) : (
-        <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
           <div className="flex size-16 items-center justify-center">
             <Icon3D name="shield" />
           </div>
@@ -358,30 +366,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 
   return (
     <div className="relative mx-auto max-w-4xl animate-in px-4 py-10 fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6 sm:py-14">
-      {/* Ambient decoration — soft drifting color blobs behind the profile */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="animate-drift absolute -left-16 top-10 size-56 rounded-full bg-primary/10 blur-3xl" />
-        <div
-          className="animate-drift absolute -right-10 top-1/3 size-64 rounded-full bg-accent/10 blur-3xl"
-          style={{ animationDelay: "2.5s" }}
-        />
-        <div
-          className="animate-drift absolute bottom-0 left-1/3 size-48 rounded-full bg-tip-green/20 blur-3xl"
-          style={{ animationDelay: "5s" }}
-        />
-      </div>
-
       <div className="relative overflow-hidden rounded-3xl border border-border bg-card text-card-foreground shadow-xl">
-        <Image
-          src="/images/gmh-watermark.webp"
-          alt=""
-          fill
-          sizes="896px"
-          quality={70}
-          aria-hidden="true"
-          className="pointer-events-none object-cover opacity-[0.2]"
-        />
-
         <div className="relative flex flex-col items-center gap-5 p-6 text-center sm:p-8">
           <div className="absolute right-4 top-4 hidden flex-col items-center gap-1 rounded-lg bg-background/95 p-1.5 shadow-md ring-1 ring-border sm:flex">
             <img
@@ -416,22 +401,11 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             <h1 className="mt-1 break-words font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
               {app.fullName}
             </h1>
-            {app.employerName &&
-              (hasEmployerInfo(app.employerInfo) ? (
-                <EmployerCard name={app.employerName} logoUrl={app.employerLogoUrl} info={app.employerInfo ?? {}} />
-              ) : (
-                <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-secondary/60 py-1.5 pl-1.5 pr-4 shadow-sm">
-                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 ring-1 ring-border/60">
-                    {app.employerLogoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
-                    ) : (
-                      <Icon3D name="building" className="size-5" />
-                    )}
-                  </span>
-                  <span className="truncate text-xs font-medium text-foreground sm:text-sm">{app.employerName}</span>
-                </div>
-              ))}
+            {app.employerName && (
+              <p className="mt-3 break-words font-serif text-xl font-semibold leading-snug text-primary sm:text-2xl">
+                {app.employerName}
+              </p>
+            )}
           </div>
 
           <div className="grid w-full grid-cols-2 gap-x-4 gap-y-4 border-t border-dashed border-border pt-5 text-left">
@@ -461,8 +435,8 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
         </div>
 
         <div className="relative border-t border-dashed border-border">
-          <span className="absolute -left-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-secondary" />
-          <span className="absolute -right-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-secondary" />
+          <span className="absolute -left-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-white" />
+          <span className="absolute -right-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-white" />
         </div>
 
         <div className="relative flex items-center justify-center gap-2 bg-secondary/40 px-6 py-3 text-xs font-medium text-muted-foreground sm:px-8">
@@ -553,6 +527,15 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             </div>
           </div>
         ))}
+        {app.employerName && (
+          <EmployerCard
+            name={app.employerName}
+            logoUrl={app.employerLogoUrl}
+            info={app.employerInfo ?? {}}
+            className="col-span-2 animate-in fade-in-0 slide-in-from-bottom-3 fill-mode-both"
+            style={{ animationDelay: `${250 + details.length * 45}ms` }}
+          />
+        )}
       </div>
 
       <div
