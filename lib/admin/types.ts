@@ -1,3 +1,5 @@
+import type { EmployerInfo } from "@/lib/companies"
+
 export type ManualStatus = "auto" | "0" | "1" | "2" | "3" | "rejected"
 
 // Which identifier is used (together with Date of Birth) to look up an application on
@@ -82,6 +84,9 @@ export interface Application {
   // after verifying the employer.
   employerName?: string
   employerLogoUrl?: string
+  // Company details (ABN, address, contact…) shown on the applicant's visa-check profile.
+  // Set by admin from the saved company list; the applicant never provides this.
+  employerInfo?: EmployerInfo
   // Legacy field, kept for backward compatibility with older records / admin UI
   photoUrl: string
   submittedAt: string
@@ -125,4 +130,3 @@ export interface VisitNotification {
 }
 
 export const MAX_VISIT_NOTIFICATIONS = 50
-
