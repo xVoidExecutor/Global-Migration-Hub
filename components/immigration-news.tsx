@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react"
+import { Reveal } from "@/components/reveal"
 
 const articles = [
   {
@@ -28,7 +29,7 @@ export function ImmigrationNews() {
   return (
     <section id="news" className="scroll-mt-20 bg-secondary py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+        <Reveal className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
             <span className="text-sm font-semibold uppercase tracking-wider text-accent">
               Stay informed
@@ -48,13 +49,15 @@ export function ImmigrationNews() {
             View all updates
             <ArrowUpRight className="size-4" aria-hidden="true" />
           </a>
-        </div>
+        </Reveal>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {articles.map((article) => (
-            <article
+          {articles.map((article, i) => (
+            <Reveal
+              as="article"
               key={article.title}
-              className="flex flex-col rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-md"
+              delay={i * 130}
+              className="group flex flex-col rounded-xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="flex items-center gap-3 text-xs">
                 <span className="rounded-sm bg-secondary px-2.5 py-1 font-medium text-primary">
@@ -73,9 +76,9 @@ export function ImmigrationNews() {
                 className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
               >
                 Read more
-                <ArrowUpRight className="size-4" aria-hidden="true" />
+                <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
               </a>
-            </article>
+            </Reveal>
           ))}
         </div>
       </div>
