@@ -119,8 +119,8 @@ export default function AdminDocumentsPage() {
                         {initials(app.fullName) || "?"}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-foreground">{app.fullName}</p>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p className="break-words font-medium leading-snug text-foreground">{app.fullName}</p>
+                        <p className="break-words text-xs text-muted-foreground">
                           {app.visaType || "Visa"} · {app.destinationCountry ? formatCountry(app.destinationCountry) : "-"}
                         </p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2">
