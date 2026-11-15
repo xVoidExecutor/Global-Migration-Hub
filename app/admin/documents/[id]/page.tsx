@@ -399,8 +399,8 @@ export default function AdminApplicationDocumentsPage({ params }: { params: Prom
                   <p className="text-sm font-semibold text-foreground">{name}</p>
                   <ul className="mt-1 space-y-1">
                     {docs.map((d) => (
-                      <li key={d.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="min-w-0 flex-1 truncate">{d.name}</span>
+                      <li key={d.id} className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1 break-all">{d.name}</span>
                         {d.dataUrl && (
                           <a href={d.dataUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                             Open
