@@ -1,9 +1,9 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Source_Serif_4 } from 'next/font/google'
+import { Public_Sans, Source_Serif_4 } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({
+const inter = Public_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#211735',
+  themeColor: '#002664',
 }
 
 export default function RootLayout({
