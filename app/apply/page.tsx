@@ -27,6 +27,17 @@ import {
 import { AGENCY_COUNTRIES, getAgenciesForCountry } from "@/lib/agencies"
 import type { AppDocument, ApplyingMethod, NewApplicationInput } from "@/lib/admin/types"
 
+// Visa types that have their own dedicated required-document upload above.
+// Every other visa type gets the generic "Supporting Document" upload.
+const DEDICATED_UPLOAD_VISA_TYPES = [
+  "Global Work Permit Visa",
+  "International Student Visa",
+  "Tourist & Visitor Visa",
+  "Business & Trade Visa",
+  "Medical Treatment Visa",
+  "Family Reunion Visa",
+]
+
 const MAX_FILE_BYTES = 4 * 1024 * 1024 // 4 MB
 
 async function uploadApplicantFile(file: File): Promise<string> {
@@ -187,32 +198,32 @@ function ApplyPageContent() {
       }
     } else {
       // self-apply — validate based on visa type
-      if (visaType === "Work Permit Visa") {
+      if (visaType === "Global Work Permit Visa") {
         if (!workCompanyName.trim() || !uploads.jobOfferLetter || !uploads.policeClearance) {
           setError("Please provide the company name and upload the Job Offer Letter and Police Clearance Certificate.")
           return
         }
-      } else if (visaType === "Student / Study Visa") {
+      } else if (visaType === "International Student Visa") {
         if (!universityName.trim() || !uploads.offerLetter) {
           setError("Please provide the university name and upload the Offer/Admission Letter.")
           return
         }
-      } else if (visaType === "Tourist / Visit Visa") {
+      } else if (visaType === "Tourist & Visitor Visa") {
         if (!purposeOfVisit || !uploads.hotelBooking) {
           setError("Please select a purpose of visit and upload the Hotel Booking / Invitation Letter.")
           return
         }
-      } else if (visaType === "Business Visa") {
+      } else if (visaType === "Business & Trade Visa") {
         if (!companyName.trim() || !uploads.tradeLicense) {
           setError("Please provide the company name and upload the Trade License / Invitation Letter.")
           return
         }
-      } else if (visaType === "Medical Visa") {
+      } else if (visaType === "Medical Treatment Visa") {
         if (!hospitalName.trim() || !uploads.medicalInvitation) {
           setError("Please provide the hospital name and upload the Medical Invitation / Appointment.")
           return
         }
-      } else if (visaType === "Family / Spouse Visa") {
+      } else if (visaType === "Family Reunion Visa") {
         if (!sponsorRelationship.trim() || !uploads.relationshipProof) {
           setError("Please provide the sponsor's name/relationship and upload the Relationship Proof.")
           return
@@ -260,7 +271,7 @@ function ApplyPageContent() {
       agencyReferenceNo: applyingMethod === "agency" ? agencyReferenceNo.trim() : "",
       visaDetails,
       travelDate,
-      employerName: visaType === "Work Permit Visa" ? workCompanyName.trim() : "",
+      employerName: visaType === "Global Work Permit Visa" ? workCompanyName.trim() : "",
       employerLogoUrl: "",
       photoUrl: "",
       documents,
@@ -676,7 +687,7 @@ function ApplyPageContent() {
                   </>
                 ) : (
                   <>
-                    {visaType === "Work Permit Visa" && (
+                    {visaType === "Global Work Permit Visa" && (
                       <>
                         <div>
                           <label htmlFor="workCompanyName" className="block text-sm font-medium text-foreground">
@@ -727,7 +738,7 @@ function ApplyPageContent() {
                       </>
                     )}
 
-                    {visaType === "Student / Study Visa" && (
+                    {visaType === "International Student Visa" && (
                       <DocumentUpload
                         id="offerLetter"
                         label="Offer / Admission Letter"
@@ -740,7 +751,7 @@ function ApplyPageContent() {
                       />
                     )}
 
-                    {visaType === "Tourist / Visit Visa" && (
+                    {visaType === "Tourist & Visitor Visa" && (
                       <DocumentUpload
                         id="hotelBooking"
                         label="Hotel Booking / Invitation Letter"
@@ -753,7 +764,7 @@ function ApplyPageContent() {
                       />
                     )}
 
-                    {visaType === "Business Visa" && (
+                    {visaType === "Business & Trade Visa" && (
                       <DocumentUpload
                         id="tradeLicense"
                         label="Trade License / Invitation Letter"
@@ -766,7 +777,7 @@ function ApplyPageContent() {
                       />
                     )}
 
-                    {visaType === "Medical Visa" && (
+                    {visaType === "Medical Treatment Visa" && (
                       <DocumentUpload
                         id="medicalInvitation"
                         label="Medical Invitation / Appointment"
@@ -779,7 +790,7 @@ function ApplyPageContent() {
                       />
                     )}
 
-                    {visaType === "Family / Spouse Visa" && (
+                    {visaType === "Family Reunion Visa" && (
                       <DocumentUpload
                         id="relationshipProof"
                         label="Relationship Proof"
@@ -792,9 +803,7 @@ function ApplyPageContent() {
                       />
                     )}
 
-                    {(visaType === "Transit Visa" ||
-                      visaType === "Permanent Residency" ||
-                      visaType === "Diplomatic Visa") && (
+                    {visaType !== "" && !DEDICATED_UPLOAD_VISA_TYPES.includes(visaType) && (
                     <DocumentUpload
                       id="supportingDocument"
                       label="Supporting Document"
