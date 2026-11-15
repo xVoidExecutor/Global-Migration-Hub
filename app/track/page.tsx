@@ -492,9 +492,20 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 
       {/* Applicant */}
       <SectionCard id="applicant-heading" icon="user" title="Applicant">
-        <div className="flex flex-col gap-5 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+        <div className="relative flex flex-col gap-5 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+          {/* Small QR code in the top-right corner (opens the public tracking page) */}
+          <div className="absolute right-3 top-3 rounded-lg border border-[#dbe3ec] bg-white p-[3px] shadow-sm sm:right-4 sm:top-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrSrc}
+              alt="QR code — scan to open the tracking page"
+              width={44}
+              height={44}
+              className="size-11 sm:size-12"
+            />
+          </div>
           <div className="flex shrink-0 flex-col items-start gap-3.5">
-            {/* Photo with a small QR code on its bottom-right corner (visible on mobile too) */}
+            {/* Applicant photo */}
             <div className="relative">
               <div className="flex size-28 items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#eef4fb] text-2xl font-semibold text-[#002664] shadow-md ring-1 ring-[#dbe3ec] sm:size-32">
                 {app.photoUrl ? (
@@ -504,23 +515,13 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                   <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
                 )}
               </div>
-              <div className="absolute -bottom-2.5 -right-2.5 rounded-lg border border-[#dbe3ec] bg-white p-[3px] shadow-md">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={qrSrc}
-                  alt="QR code — scan to open the tracking page"
-                  width={44}
-                  height={44}
-                  className="size-11 sm:size-12"
-                />
-              </div>
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f5ec] px-2.5 py-1 text-[11px] font-semibold text-[#1f7a3d] ring-1 ring-[#bfe3cb]">
               <Icon3D name="shield" className="size-4" /> Identity verified
             </span>
           </div>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 sm:pr-16">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4b5563]">Applicant name</p>
             <p className="mt-0.5 min-w-0 font-bold leading-tight text-[#002664]">
               <FitText max={26} min={16}>
@@ -678,7 +679,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {docs.map((doc, index) => {
-                      const label = docs.length > 1 ? `${groupName} ${index + 1}` : groupName
+                      const label = `Folio ${index + 1}`
                       return (
                         <DocumentThumbnail key={doc.id} doc={doc} label={label} onOpen={() => setViewDoc({ doc, label })} />
                       )
