@@ -4,7 +4,8 @@ import { useState, useRef, useMemo } from "react"
 import { X, Pencil, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-  DEFAULT_DOCUMENT_GROUPS,
+  ADMIN_DOCUMENT_NAME_OPTIONS,
+  DOCUMENT_NAME_MANUAL,
   effectiveStage,
   getTrackingMethod,
   stageLabel,
@@ -18,7 +19,7 @@ import { uploadAdminFile } from "@/lib/admin/upload"
 import { CompanyPicker } from "@/components/admin/company-picker"
 import { rememberCompany } from "@/lib/admin/companies"
 import { abrLookupUrl, formatAbn, formatAcn, hasEmployerInfo, type EmployerInfo } from "@/lib/companies"
-import { formatCountry } from "@/lib/countries"
+import { displayVisaType, formatCountry } from "@/lib/countries"
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024 // 4 MB per file
 
@@ -81,7 +82,9 @@ export function ApplicationModal({
   const [dateSaved, setDateSaved] = useState(false)
   const [statusSaved, setStatusSaved] = useState(false)
   const [uploadError, setUploadError] = useState("")
-  const [newGroupName, setNewGroupName] = useState("")
+  const [docNameChoice, setDocNameChoice] = useState("")
+  const [manualDocName, setManualDocName] = useState("")
+  const newGroupName = docNameChoice === DOCUMENT_NAME_MANUAL ? manualDocName : docNameChoice
   const [renamingGroup, setRenamingGroup] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -229,7 +232,8 @@ export function ApplicationModal({
     const groupName = newGroupName.trim()
     if (!groupName) return
     await handleAddFilesToGroup(groupName, files)
-    setNewGroupName("")
+    setDocNameChoice("")
+    setManualDocName("")
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
@@ -302,7 +306,7 @@ export function ApplicationModal({
                   Ref: {app.passportNumber || "—"}
                 </div>
                 <div className="break-words text-sm text-muted-foreground">
-                  {app.visaType || "Visa"} Application · {formatCountry(app.destinationCountry)}
+                  {displayVisaType(app.visaType) || "Visa"} Application · {formatCountry(app.destinationCountry)}
                 </div>
               </div>
               <div className="flex gap-2">
@@ -790,19 +794,29 @@ export function ApplicationModal({
                 <label htmlFor="newGroupName" className="text-xs font-medium text-muted-foreground">
                   Document name:
                 </label>
-                <input
+                <select
                   id="newGroupName"
-                  list="doc-group-suggestions"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  placeholder="e.g. Passport, Job Letter"
+                  value={docNameChoice}
+                  onChange={(e) => setDocNameChoice(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs text-foreground sm:w-auto"
-                />
-                <datalist id="doc-group-suggestions">
-                  {DEFAULT_DOCUMENT_GROUPS.map((g) => (
-                    <option key={g} value={g} />
+                >
+                  <option value="">Select document name</option>
+                  {ADMIN_DOCUMENT_NAME_OPTIONS.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
                   ))}
-                </datalist>
+                  <option value={DOCUMENT_NAME_MANUAL}>Other — type manually</option>
+                </select>
+                {docNameChoice === DOCUMENT_NAME_MANUAL && (
+                  <input
+                    id="manualDocName"
+                    value={manualDocName}
+                    onChange={(e) => setManualDocName(e.target.value)}
+                    placeholder="e.g. Passport, Job Letter"
+                    className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs text-foreground sm:w-auto"
+                  />
+                )}
               </div>
               <label
                 className={`inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ${
