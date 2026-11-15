@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react"
 import { Mail, Phone, MapPin, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Reveal } from "@/components/reveal"
 
 const details = [
   { icon: Mail, label: "Email", value: "ceo@globalmigrationhub.com", href: "mailto:ceo@globalmigrationhub.com" },
@@ -25,7 +26,7 @@ export function ContactSection() {
     <section id="contact" className="scroll-mt-20 bg-muted py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div>
+          <Reveal direction="left">
             <span className="text-sm font-semibold uppercase tracking-wider text-accent">
               Get in touch
             </span>
@@ -38,9 +39,9 @@ export function ContactSection() {
             </p>
 
             <ul className="mt-10 space-y-6">
-              {details.map((detail) => (
-                <li key={detail.label} className="flex items-start gap-4">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+              {details.map((detail, i) => (
+                <Reveal as="li" key={detail.value} delay={150 + i * 80} className="group flex items-start gap-4">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary transition duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
                     <detail.icon className="size-5" aria-hidden="true" />
                   </span>
                   <div>
@@ -53,14 +54,14 @@ export function ContactSection() {
                       <p className="text-base font-medium text-foreground">{detail.value}</p>
                     )}
                   </div>
-                </li>
+                </Reveal>
               ))}
             </ul>
-          </div>
+          </Reveal>
 
-          <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl sm:p-8">
+          <Reveal direction="right" delay={120} className="rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl sm:p-8">
             {submitted ? (
-              <div className="flex h-full flex-col items-center justify-center py-12 text-center">
+              <div className="flex h-full animate-in zoom-in-95 fade-in-0 duration-500 flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 className="size-12 text-primary" aria-hidden="true" />
                 <h3 className="mt-4 font-serif text-xl font-semibold">Message sent</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -92,7 +93,7 @@ export function ContactSection() {
                 </Button>
               </form>
             )}
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
