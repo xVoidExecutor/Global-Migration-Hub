@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BrandLogo } from "@/components/brand-logo"
 import { BadgeCheck, ExternalLink, Globe2, Lock, Mail, MapPin, Phone, ShieldCheck } from "lucide-react"
 
 const columns = [
@@ -44,13 +45,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-11 items-center justify-center overflow-hidden rounded-sm bg-black ring-1 ring-white/30">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-              </span>
-              <span className="text-lg font-bold text-white">Global Migration Hub</span>
-            </div>
+            <BrandLogo tone="light" size="sm" tagline={false} />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/80">
               Registered migration agents helping individuals and businesses move
               across borders with confidence.
