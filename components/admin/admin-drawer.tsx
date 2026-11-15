@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { BrandMark } from "@/components/brand-logo"
 import {
   Calculator,
   CalendarClock,
@@ -113,10 +114,7 @@ export function AdminDrawer({
         }`}
       >
         <div className="flex items-center gap-3 border-b border-border px-4 py-4">
-          <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary shadow-md shadow-primary/20 ring-1 ring-primary/20">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-          </span>
+          <BrandMark className="size-10" title="Global Migration Hub" />
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate font-serif text-sm font-bold text-foreground">Global Migration Hub</p>
             <p className="truncate text-xs text-muted-foreground">{adminName}</p>
