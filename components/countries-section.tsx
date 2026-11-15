@@ -5,6 +5,7 @@ import Image from "next/image"
 import { ArrowRight, ChevronDown, ChevronUp, Globe2 } from "lucide-react"
 import { DESTINATION_COUNTRIES, ALL_COUNTRIES, COUNTRY_FLAGS } from "@/lib/countries"
 import { EnquireModal } from "@/components/enquire-modal"
+import { Reveal } from "@/components/reveal"
 
 const countryDetails: Record<string, { visaTypes: string; image: string; alt: string }> = {
   "United Kingdom": {
@@ -139,7 +140,7 @@ export function CountriesSection() {
   return (
     <section id="countries" className="scroll-mt-20 bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-sm font-semibold uppercase tracking-wider text-accent-foreground">
             Where we work
           </span>
@@ -150,20 +151,23 @@ export function CountriesSection() {
             Explore visa pathways across our most requested destinations. Our
             advisors guide you through every step of your relocation.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {countries.map((country) => (
-            <article
+          {countries.map((country, i) => (
+            <Reveal
+              as="article"
               key={country.name}
-              className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl"
+              delay={(i % 3) * 120}
+              direction="zoom"
+              className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
             >
               <Image
                 src={country.image || "/placeholder.svg"}
                 alt={country.alt}
                 fill
                 sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               />
               <div
                 aria-hidden="true"
@@ -182,14 +186,14 @@ export function CountriesSection() {
                 <button
                   type="button"
                   onClick={() => setEnquireCountry(country.name)}
-                  className="inline-flex w-fit items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+                  className="group/btn inline-flex w-fit items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-all duration-200 hover:bg-accent/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
                   aria-label={`Enquire now about visas for ${country.name}`}
                 >
                   Enquire Now
-                  <ArrowRight className="size-4" aria-hidden="true" />
+                  <ArrowRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-1" aria-hidden="true" />
                 </button>
               </div>
-            </article>
+            </Reveal>
           ))}
         </div>
 
@@ -216,14 +220,15 @@ export function CountriesSection() {
                 your application.
               </p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {remainingCountries.map((name) => (
+                {remainingCountries.map((name, i) => (
                   <button
                     key={name}
                     type="button"
                     onClick={() => setEnquireCountry(name)}
-                    className="group flex items-center gap-3 rounded-xl border border-border/60 bg-background/40 px-4 py-3 text-left backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:bg-accent/10 hover:shadow-md"
+                    style={{ animationDelay: `${Math.min(i, 24) * 25}ms` }}
+                    className="animate-in fade-in-0 zoom-in-95 duration-300 fill-mode-both group flex items-center gap-3 rounded-xl border border-border/60 bg-background/40 px-4 py-3 text-left backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:bg-accent/10 hover:shadow-md"
                   >
-                    <span className="shrink-0 text-2xl leading-none" aria-hidden="true">
+                    <span className="shrink-0 text-2xl leading-none transition-transform duration-200 group-hover:scale-125" aria-hidden="true">
                       {COUNTRY_FLAGS[name]}
                     </span>
                     <span className="truncate text-sm font-medium text-foreground transition-colors group-hover:text-accent-foreground">
