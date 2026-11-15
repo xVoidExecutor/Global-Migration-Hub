@@ -526,7 +526,7 @@ export function CompanyPicker({
                       )}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-sm text-foreground">{c.name}</span>
+                      <span className="block break-words text-sm text-foreground">{c.name}</span>
                       {c.abn && <span className="block text-[11px] text-muted-foreground">ABN {formatAbn(c.abn)}</span>}
                     </span>
                   </button>
