@@ -1,92 +1,86 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { ArrowRight, ChevronRight } from "lucide-react"
 import { ALL_COUNTRIES, VISA_TYPES } from "@/lib/countries"
 
-const trustItems = ["Fast Processing", "Secure Process", "24/7 Support"]
+const quickLinks = [
+  { label: "Track your application", href: "/track" },
+  { label: "Start a visa application", href: "/apply" },
+  { label: "Book a biometric appointment", href: "/biometric" },
+  { label: "PR points calculator", href: "/calculator" },
+  { label: "Read immigration news", href: "#news" },
+]
 
 const stats = [
-  { value: `${ALL_COUNTRIES.length}+`, label: "Countries Supported" },
-  { value: `${VISA_TYPES.length}`, label: "Visa Categories" },
-  { value: "24/7", label: "Advisor Support" },
+  { value: `${ALL_COUNTRIES.length}+`, label: "Countries supported" },
+  { value: `${VISA_TYPES.length}`, label: "Visa categories" },
+  { value: "24/7", label: "Advisor support" },
 ]
 
 export function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden text-primary-foreground">
-      <Image
-        src="/images/hero-plane.webp"
-        alt="A private jet flying above the clouds"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-[oklch(0.15_0.03_264)]/95 via-[oklch(0.32_0.1_258)]/85 to-[oklch(0.585_0.18_254.5)]/85"
-      />
-      <div className="relative z-10 mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
-        <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-xs font-medium backdrop-blur">
-          <ShieldCheck className="size-4" aria-hidden="true" />
-          Licensed Immigration & Visa Consultancy
-        </span>
+    <section id="top" className="bg-primary text-primary-foreground">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.4fr_1fr] lg:gap-14 lg:px-8">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-white/80">
+            Licensed immigration &amp; visa consultancy
+          </p>
+          <h1 className="mt-3 text-balance text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+            Visa and immigration help you can trust
+          </h1>
+          <p className="mt-4 max-w-xl text-pretty text-base leading-relaxed text-white/85 sm:text-lg">
+            From work permits to permanent residency, Global Migration Hub guides individuals and businesses through
+            every step of the visa process with clarity, speed, and complete transparency.
+          </p>
 
-        <h1 className="mt-6 text-balance font-serif text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-          Your Trusted Global Partner for Seamless Visa &amp; Immigration Excellence
-        </h1>
-
-        <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-primary-foreground/80 sm:text-lg">
-          From work permits to permanent residency, Global Migration Hub guides
-          individuals and businesses through every step of the visa process with
-          clarity, speed, and complete transparency.
-        </p>
-
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button
-            asChild
-            size="lg"
-            className="h-12 w-full gap-2 rounded-full bg-accent px-7 text-base text-accent-foreground hover:bg-accent/90 sm:w-auto"
-          >
-            <Link href="/apply">
-              Start Application
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/apply"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-sm bg-white px-7 text-base font-semibold text-primary transition-colors hover:bg-secondary"
+            >
+              Start application
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
-          </Button>
-          <a
-            href="#services"
-            className={cn(
-              buttonVariants({ size: "lg", variant: "outline" }),
-              "h-12 w-full rounded-full border-primary-foreground/30 bg-transparent px-7 text-base text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:w-auto",
-            )}
-          >
-            Explore Services
-          </a>
+            <a
+              href="#services"
+              className="inline-flex h-12 items-center justify-center rounded-sm border-2 border-white px-7 text-base font-semibold text-white transition-colors hover:bg-white hover:text-primary"
+            >
+              Explore services
+            </a>
+          </div>
         </div>
 
-        <ul className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 border-t border-primary-foreground/15 pt-8">
-          {trustItems.map((item) => (
-            <li key={item} className="flex items-center gap-2 text-sm text-primary-foreground/85">
-              <CheckCircle2 className="size-4 text-primary-foreground" aria-hidden="true" />
-              {item}
-            </li>
-          ))}
-        </ul>
+        <aside aria-labelledby="quick-links-heading" className="rounded-sm border-t-4 border-accent bg-white text-foreground">
+          <h2 id="quick-links-heading" className="border-b border-border px-5 py-4 text-lg font-bold text-primary">
+            Quick links
+          </h2>
+          <ul>
+            {quickLinks.map((item) => (
+              <li key={item.label} className="border-b border-border last:border-b-0">
+                <Link
+                  href={item.href}
+                  className="flex items-center justify-between gap-3 px-5 py-3.5 text-base font-medium text-accent underline-offset-2 hover:bg-secondary hover:text-primary hover:underline"
+                >
+                  {item.label}
+                  <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </div>
 
-        <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-primary-foreground/15 pt-8 sm:gap-8">
+      <dl className="border-t border-white/20 bg-[#001a47]">
+        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-4 px-4 py-5 sm:px-6 lg:px-8">
           {stats.map((stat) => (
             <div key={stat.label}>
-              <dt className="sr-only">{stat.label}</dt>
-              <dd className="font-serif text-2xl font-semibold sm:text-3xl">{stat.value}</dd>
-              <p className="mt-1 text-xs text-primary-foreground/70 sm:text-sm">{stat.label}</p>
+              <dt className="text-xs text-white/75 sm:text-sm">{stat.label}</dt>
+              <dd className="text-2xl font-bold sm:text-3xl">{stat.value}</dd>
             </div>
           ))}
-        </dl>
-      </div>
+        </div>
+      </dl>
     </section>
   )
 }
