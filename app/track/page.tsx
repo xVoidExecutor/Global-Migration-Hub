@@ -233,6 +233,40 @@ function TrackPageContent() {
   )
 }
 
+function SectionCard({
+  id,
+  icon,
+  title,
+  aside,
+  children,
+}: {
+  id: string
+  icon: IconName
+  title: string
+  aside?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section
+      aria-labelledby={id}
+      className="mt-6 overflow-hidden rounded-2xl border border-[#dbe3ec] bg-white shadow-[0_2px_10px_rgba(0,38,100,0.06)]"
+    >
+      <div className="flex items-center gap-3 border-b border-[#e5ebf2] bg-gradient-to-r from-[#eef4fb] to-white px-4 py-3.5 sm:px-6">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-sm ring-1 ring-[#dbe3ec]">
+          <Icon3D name={icon} />
+        </span>
+        <h2 id={id} className="flex-1 text-lg font-bold text-[#002664] sm:text-xl">
+          {title}
+        </h2>
+        {aside && (
+          <span className="rounded-full bg-[#e3edf8] px-2.5 py-1 text-xs font-semibold text-[#002664]">{aside}</span>
+        )}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 function ApplicantProfile({ app, credentials }: { app: Application; credentials: PaymentCredentials }) {
   const stage = effectiveStage(app)
   const isRejected = stage === "rejected"
@@ -292,58 +326,44 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
     }
   }, [viewDoc])
 
-  const dobFormatted = app.dateOfBirth
-    ? new Date(app.dateOfBirth).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
-    : "—"
+  const fmtDate = (value: string) =>
+    new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
 
-  const rawDetails: { icon: IconName; label: string; value: string; wide?: boolean }[] = [
+  const dobFormatted = app.dateOfBirth ? fmtDate(app.dateOfBirth) : "—"
+  const appCode = `GMH-${app.id.replace(/\D/g, "").slice(-6) || "000000"}`
+
+  const infoRows: { icon: IconName; label: string; value: string; wide?: boolean }[] = [
+    { icon: "passport", label: "Passport number", value: app.passportNumber || "—" },
+    { icon: "calendar", label: "Date of birth", value: dobFormatted },
+    { icon: "id", label: "National ID", value: app.nationalId || "—" },
+    { icon: "document", label: "Visa type", value: app.visaType || "—" },
+    {
+      icon: "plane",
+      label: "Destination country",
+      value: app.destinationCountry ? formatCountry(app.destinationCountry) : "—",
+    },
     { icon: "globe", label: "Nationality", value: app.nationality || "—" },
     { icon: "passport", label: "Passport Type", value: app.passportType || "—" },
-    { icon: "mail", label: "Email", value: app.email || "—", wide: true },
+    { icon: "mail", label: "Email", value: app.email || "—" },
     { icon: "phone", label: "Phone", value: app.phone || "—" },
-    { icon: "id", label: "App. ID", value: `GMH-${app.id.replace(/\D/g, "").slice(-6) || "000000"}` },
-    {
-      icon: "clock",
-      label: "Submitted",
-      value: new Date(app.submittedAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-    },
-    ...(app.travelDate
-      ? [
-          {
-            icon: "calendar",
-            label: "Travel Date",
-            value: new Date(app.travelDate).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            }),
-          },
-        ]
-      : []),
+    { icon: "id", label: "App. ID", value: appCode },
+    { icon: "clock", label: "Submitted", value: fmtDate(app.submittedAt) },
+    ...(app.travelDate ? [{ icon: "calendar" as IconName, label: "Travel Date", value: fmtDate(app.travelDate) }] : []),
     ...(app.applyingMethod === "agency" && app.agencyName
-      ? [{ icon: "building", label: "Agency Name", value: app.agencyName, wide: true }]
+      ? [{ icon: "building" as IconName, label: "Agency Name", value: app.agencyName }]
       : []),
     ...(app.applyingMethod === "agency" && app.agencyReferenceNo
-      ? [{ icon: "id", label: "Agency Reference No.", value: app.agencyReferenceNo, wide: true }]
+      ? [{ icon: "id" as IconName, label: "Agency Reference No.", value: app.agencyReferenceNo }]
       : []),
   ]
 
   const isComplete = !isRejected && stageIndex === STAGE_LABELS.length - 1
-  const statusColor = isRejected ? "border-[#b81237]" : isComplete ? "border-[#1f7a3d]" : "border-[#00698f]"
-  const statusText = isRejected ? "text-[#b81237]" : isComplete ? "text-[#1f7a3d]" : "text-[#002664]"
-
-  const infoRows: { label: string; value: string }[] = [
-    { label: "Passport number", value: app.passportNumber || "—" },
-    { label: "Date of birth", value: dobFormatted },
-    { label: "National ID", value: app.nationalId || "—" },
-    { label: "Visa type", value: app.visaType || "—" },
-    { label: "Destination country", value: app.destinationCountry ? formatCountry(app.destinationCountry) : "—" },
-    ...rawDetails.map((d) => ({ label: d.label, value: d.value })),
-  ]
+  const bannerTone = isRejected
+    ? "from-[#8f0f2c] to-[#b81237]"
+    : isComplete
+      ? "from-[#14582c] to-[#1f7a3d]"
+      : "from-[#002664] to-[#00698f]"
+  const bannerIcon: IconName = isRejected ? "rejected" : isComplete ? "check" : "clock"
 
   return (
     <div className="relative mx-auto max-w-4xl animate-in px-4 py-6 text-[#313131] fade-in-0 duration-500 sm:px-6 sm:py-10">
@@ -368,20 +388,30 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
       <h1 className="mt-5 text-3xl font-bold leading-tight text-[#002664] sm:text-4xl">Visa application status</h1>
       <p className="mt-2 text-base text-[#4b5563]">The latest information held for this applicant.</p>
 
-      <div role="status" className={`mt-6 border-l-[6px] bg-[#f5f7fa] p-4 sm:p-5 ${statusColor}`}>
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Application status</p>
-        <p className={`mt-1 text-xl font-bold sm:text-2xl ${statusText}`}>
-          {isRejected ? "Application rejected" : STAGE_LABELS[stageIndex]}
-        </p>
+      {/* Status banner */}
+      <div
+        role="status"
+        className={`mt-6 flex items-center gap-4 rounded-2xl bg-gradient-to-r ${bannerTone} p-4 text-white shadow-lg sm:p-5`}
+      >
+        <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white p-2.5 shadow-md sm:size-16">
+          <Icon3D name={bannerIcon} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/80">Application status</p>
+          <p className="mt-0.5 text-xl font-bold leading-tight sm:text-2xl">
+            {isRejected ? "Application rejected" : STAGE_LABELS[stageIndex]}
+          </p>
+        </div>
+        <span className="hidden rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold ring-1 ring-white/30 sm:inline-block">
+          {appCode}
+        </span>
       </div>
 
-      <section aria-labelledby="applicant-heading" className="mt-8 border border-[#cfd6de] bg-white">
-        <h2 id="applicant-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
-          Applicant
-        </h2>
+      {/* Applicant */}
+      <SectionCard id="applicant-heading" icon="user" title="Applicant">
         <div className="flex flex-col gap-5 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
-          <div className="flex shrink-0 flex-col items-start gap-2">
-            <div className="flex size-28 items-center justify-center overflow-hidden rounded-sm border border-[#cfd6de] bg-[#f5f7fa] text-2xl font-semibold text-[#002664] sm:size-32">
+          <div className="flex shrink-0 flex-col items-start gap-2.5">
+            <div className="flex size-28 items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#eef4fb] text-2xl font-semibold text-[#002664] shadow-md ring-1 ring-[#dbe3ec] sm:size-32">
               {app.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={app.photoUrl} alt={app.fullName} className="size-full object-cover" />
@@ -389,8 +419,8 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                 <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
               )}
             </div>
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-[#1f7a3d]">
-              <Icon3D name="shield" className="size-5" /> Identity verified
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f5ec] px-2.5 py-1 text-xs font-semibold text-[#1f7a3d] ring-1 ring-[#bfe3cb]">
+              <Icon3D name="shield" className="size-4" /> Identity verified
             </span>
           </div>
 
@@ -398,8 +428,8 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Applicant name</p>
             <p className="mt-0.5 break-words text-2xl font-bold leading-tight text-[#002664] sm:text-3xl">{app.fullName}</p>
             {app.employerName && (
-              <div className="mt-4 flex items-center gap-3">
-                <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-[#cfd6de] bg-white p-1 sm:size-14">
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#e5ebf2] bg-[#f7f9fc] p-3">
+                <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#dbe3ec] bg-white p-1 sm:size-14">
                   {app.employerLogoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
@@ -415,7 +445,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             )}
           </div>
 
-          <div className="hidden shrink-0 flex-col items-center gap-1 border border-[#cfd6de] p-1.5 sm:flex">
+          <div className="hidden shrink-0 flex-col items-center gap-1.5 rounded-xl border border-[#dbe3ec] bg-white p-2 shadow-sm sm:flex">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=88x88&margin=0&data=${encodeURIComponent(
@@ -429,12 +459,10 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
             <span className="text-[9px] font-semibold uppercase tracking-wide text-[#4b5563]">Scan to track</span>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section aria-labelledby="progress-heading" className="mt-8 border border-[#cfd6de] bg-white">
-        <h2 id="progress-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
-          Application progress
-        </h2>
+      {/* Progress */}
+      <SectionCard id="progress-heading" icon="pending" title="Application progress">
         <ol className="p-4 sm:p-6">
           {STAGE_LABELS.map((label, i) => {
             const state = isRejected
@@ -450,90 +478,132 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                   : "upcoming"
             const circle =
               state === "done"
-                ? "border-[#1f7a3d] bg-[#1f7a3d] text-white"
+                ? "border-[#1f7a3d] bg-[#1f7a3d] text-white shadow-md shadow-[#1f7a3d]/30"
                 : state === "current"
-                  ? "border-[#00698f] bg-white text-[#00698f]"
+                  ? "border-[#00698f] bg-white text-[#00698f] ring-4 ring-[#00698f]/15"
                   : state === "rejected"
-                    ? "border-[#b81237] bg-[#b81237] text-white"
+                    ? "border-[#b81237] bg-[#b81237] text-white shadow-md shadow-[#b81237]/30"
                     : "border-[#cfd6de] bg-white text-[#6b7280]"
+            const rowTone =
+              state === "current"
+                ? "border-[#bcd9e6] bg-[#f0f7fa]"
+                : state === "done"
+                  ? "border-[#cfe8d8] bg-[#f4fbf6]"
+                  : state === "rejected"
+                    ? "border-[#f0c2cc] bg-[#fdf3f5]"
+                    : "border-[#e5ebf2] bg-white"
             const caption =
               state === "done" ? "Completed" : state === "current" ? "In progress" : state === "rejected" ? "Not approved" : "Not started"
+            const captionTone =
+              state === "done"
+                ? "bg-[#e7f5ec] text-[#1f7a3d]"
+                : state === "current"
+                  ? "bg-[#e0f0f7] text-[#00698f]"
+                  : state === "rejected"
+                    ? "bg-[#fbe3e8] text-[#b81237]"
+                    : "bg-[#eef1f5] text-[#6b7280]"
             return (
-              <li key={label} className="relative flex gap-4 pb-6 last:pb-0">
+              <li key={label} className="relative flex gap-4 pb-4 last:pb-0">
                 {i < STAGE_LABELS.length - 1 && (
                   <span
                     aria-hidden="true"
-                    className={`absolute left-[15px] top-8 h-[calc(100%-2rem)] w-0.5 ${state === "done" ? "bg-[#1f7a3d]" : "bg-[#cfd6de]"}`}
+                    className={`absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-0.5 ${state === "done" ? "bg-[#1f7a3d]" : "bg-[#cfd6de]"}`}
                   />
                 )}
-                <span className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${circle}`}>
+                <span className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${circle}`}>
                   {state === "done" ? (
-                    <Check className="size-4" aria-hidden="true" />
+                    <Check className="size-5" aria-hidden="true" />
                   ) : state === "rejected" ? (
-                    <X className="size-4" aria-hidden="true" />
+                    <X className="size-5" aria-hidden="true" />
                   ) : (
                     i + 1
                   )}
                 </span>
-                <div className="min-w-0 pt-0.5">
-                  <p className={`text-base font-semibold ${state === "upcoming" ? "text-[#6b7280]" : "text-[#313131]"}`}>
+                <div className={`flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 ${rowTone}`}>
+                  <p className={`text-base font-semibold ${state === "upcoming" ? "text-[#6b7280]" : "text-[#1f2937]"}`}>
                     {i === 3 && isRejected ? "Rejected" : label}
                   </p>
-                  <p className="text-sm text-[#4b5563]">{caption}</p>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${captionTone}`}>{caption}</span>
                 </div>
               </li>
             )
           })}
         </ol>
-      </section>
+      </SectionCard>
 
-      <section aria-labelledby="info-heading" className="mt-8 border border-[#cfd6de] bg-white">
-        <h2 id="info-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
-          Application information
-        </h2>
-        <dl className="px-4 sm:px-6">
-          {infoRows.map(({ label, value }) => (
-            <div key={label} className="grid grid-cols-1 gap-0.5 border-b border-[#e5e9ee] py-3 last:border-b-0 sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm font-semibold text-[#313131]">{label}</dt>
-              <dd className="min-w-0 break-words text-base text-[#313131] sm:col-span-2">{value}</dd>
+      {/* Information */}
+      <SectionCard id="info-heading" icon="id" title="Application information">
+        <dl className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-6">
+          {infoRows.map(({ icon, label, value }) => (
+            <div
+              key={label}
+              className="flex items-center gap-3 rounded-xl border border-[#e5ebf2] bg-[#f9fbfd] p-3 transition hover:border-[#bcd9e6] hover:bg-white"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white p-2 shadow-sm ring-1 ring-[#e0e7ef]">
+                <Icon3D name={icon} />
+              </span>
+              <div className="min-w-0">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">{label}</dt>
+                <dd className="mt-0.5 min-w-0 break-words text-base font-semibold text-[#1f2937]">{value}</dd>
+              </div>
             </div>
           ))}
         </dl>
         {app.employerName && (
-          <div className="border-t border-[#cfd6de] p-4 sm:p-6">
+          <div className="border-t border-[#e5ebf2] p-4 sm:p-6">
             <EmployerCard name={app.employerName} logoUrl={app.employerLogoUrl} info={app.employerInfo ?? {}} />
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <div className="mt-8 border border-[#cfd6de] bg-white p-4 sm:p-6">
-        <h2 className="mb-4 text-lg font-bold text-[#002664]">Documents</h2>
-        {app.documents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No documents have been added yet.</p>
-        ) : (
-          <div className="space-y-7">
-            {groupedDocuments.map(([groupName, docs]) => (
-              <div key={groupName}>
-                <h4 className="mb-3 text-lg font-bold text-foreground sm:text-xl">{groupName}</h4>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {docs.map((doc, index) => {
-                    const label = docs.length > 1 ? `${groupName} ${index + 1}` : groupName
-                    return (
-                      <DocumentThumbnail key={doc.id} doc={doc} label={label} onOpen={() => setViewDoc({ doc, label })} />
-                    )
-                  })}
+      {/* Documents */}
+      <SectionCard
+        id="documents-heading"
+        icon="document"
+        title="Documents"
+        aside={app.documents.length > 0 ? `${app.documents.length} file${app.documents.length > 1 ? "s" : ""}` : undefined}
+      >
+        <div className="p-4 sm:p-6">
+          {app.documents.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-[#cfd6de] bg-[#f9fbfd] p-8 text-center">
+              <Icon3D name="document" className="size-12" />
+              <p className="text-sm text-[#4b5563]">No documents have been added yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {groupedDocuments.map(([groupName, docs]) => (
+                <div key={groupName}>
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#eef4fb] p-1.5 ring-1 ring-[#dbe3ec]">
+                      <Icon3D name="document" />
+                    </span>
+                    <h3 className="flex-1 text-lg font-bold text-[#002664] sm:text-xl">{groupName}</h3>
+                    <span className="rounded-full bg-[#eef4fb] px-2 py-0.5 text-xs font-semibold text-[#002664]">
+                      {docs.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {docs.map((doc, index) => {
+                      const label = docs.length > 1 ? `${groupName} ${index + 1}` : groupName
+                      return (
+                        <DocumentThumbnail key={doc.id} doc={doc} label={label} onOpen={() => setViewDoc({ doc, label })} />
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </SectionCard>
 
       <PaymentSection app={app} credentials={credentials} />
 
-      <div className="mt-8 flex items-start gap-3 border-l-[6px] border-[#00698f] bg-[#f0f7fa] p-4 text-sm text-[#313131]">
-        <Icon3D name="shield" className="mt-0.5 size-5 shrink-0" />
-        <p>This profile is only accessible with your correct ID number and date of birth together.</p>
+      <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[#cfe3ee] bg-[#f0f7fa] p-4 text-sm text-[#313131]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-[#cfe3ee]">
+          <Icon3D name="shield" />
+        </span>
+        <p className="pt-1.5">This profile is only accessible with your correct ID number and date of birth together.</p>
       </div>
 
       {viewDoc && (
@@ -542,11 +612,14 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           onClick={() => setViewDoc(null)}
         >
           <div
-            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm bg-card shadow-2xl"
+            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-card shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-              <span className="truncate text-sm font-semibold text-foreground">{viewDoc.label}</span>
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
+              <span className="flex min-w-0 items-center gap-2">
+                <Icon3D name="document" className="size-5 shrink-0" />
+                <span className="truncate text-sm font-semibold text-foreground">{viewDoc.label}</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setViewDoc(null)}
@@ -583,7 +656,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           <button
             type="button"
             onClick={openNote}
-            className="animate-pop-in flex max-w-[220px] items-center gap-2 rounded-sm border border-border bg-card px-3.5 py-2.5 text-left shadow-lg"
+            className="animate-pop-in flex max-w-[220px] items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-left shadow-lg"
           >
             <Sparkles className="size-4 shrink-0 text-accent-foreground" aria-hidden="true" />
             <span className="text-xs font-medium text-foreground">New message from your consultant</span>
@@ -611,7 +684,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           onClick={() => setNoteOpen(false)}
         >
           <div
-            className="w-full max-w-sm animate-in overflow-hidden rounded-t-sm border border-border bg-card shadow-2xl fade-in-0 slide-in-from-bottom-8 duration-300 sm:rounded-sm sm:slide-in-from-bottom-4"
+            className="w-full max-w-sm animate-in overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl fade-in-0 slide-in-from-bottom-8 duration-300 sm:rounded-2xl sm:slide-in-from-bottom-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border bg-primary/5 px-5 py-4">
@@ -653,10 +726,10 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 function DocumentThumbnail({ doc, label, onOpen }: { doc: AppDocument; label: string; onOpen: () => void }) {
   if (!doc.dataUrl) {
     return (
-      <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-muted/30 p-3 text-center">
-        <Icon3D name="document" className="size-10" />
-        <p className="text-xs font-medium leading-tight text-muted-foreground">{label}</p>
-        <p className="text-[10px] text-muted-foreground">Pending upload</p>
+      <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#cfd6de] bg-[#f9fbfd] p-3 text-center">
+        <Icon3D name="pending" className="size-10" />
+        <p className="text-xs font-semibold leading-tight text-[#4b5563]">{label}</p>
+        <p className="text-[10px] text-[#6b7280]">Pending upload</p>
       </div>
     )
   }
@@ -665,25 +738,30 @@ function DocumentThumbnail({ doc, label, onOpen }: { doc: AppDocument; label: st
     <button
       type="button"
       onClick={onOpen}
-      className="group flex aspect-[3/4] flex-col overflow-hidden rounded-sm border border-border bg-secondary/20 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex aspect-[3/4] flex-col overflow-hidden rounded-xl border border-[#dbe3ec] bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#00698f] hover:shadow-lg"
     >
-      <div className="relative flex-1 overflow-hidden bg-muted/30">
+      <div className="relative flex-1 overflow-hidden bg-[#f3f6fa]">
         {isImageDataUrl(doc.dataUrl) ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={doc.dataUrl}
             alt={label}
-            className="absolute inset-0 size-full object-cover transition group-hover:scale-105"
+            className="absolute inset-0 size-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <Icon3D name="document" className="size-12" />
           </div>
         )}
+        <span className="absolute right-2 top-2 rounded-full bg-[#002664]/85 px-2 py-0.5 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
+          View
+        </span>
       </div>
-      <div className="flex items-center gap-1.5 border-t border-border bg-card px-2.5 py-2">
-        <Icon3D name="document" className="size-4 shrink-0" />
-        <span className="truncate text-xs font-medium text-foreground">{label}</span>
+      <div className="flex items-center gap-2 border-t border-[#e5ebf2] bg-white px-2.5 py-2.5">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-[#eef4fb] p-1">
+          <Icon3D name="document" />
+        </span>
+        <span className="truncate text-xs font-semibold text-[#1f2937]">{label}</span>
       </div>
     </button>
   )
