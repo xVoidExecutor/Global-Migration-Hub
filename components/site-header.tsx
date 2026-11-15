@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
+import { BrandLogo } from "@/components/brand-logo"
 
 const navLinks = [
   { label: "Work Permits", href: "#services" },
@@ -23,15 +24,7 @@ export function SiteHeader() {
       <div className="border-b-4 border-accent bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <a href="#top" className="flex min-w-0 items-center gap-3" aria-label="Global Migration Hub home">
-            <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-black ring-1 ring-white/30">
-              <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-            </span>
-            <span className="flex flex-col leading-tight">
-              <span className="whitespace-nowrap text-xl font-bold tracking-tight sm:text-2xl">Global Migration Hub</span>
-              <span className="whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.14em] text-white/80 sm:text-[11px] sm:tracking-[0.22em]">
-                Visa &amp; Immigration Consultancy
-              </span>
-            </span>
+            <BrandLogo tone="light" size="md" />
           </a>
 
           <div className="hidden items-center gap-3 md:flex">
