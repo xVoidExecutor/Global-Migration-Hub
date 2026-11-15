@@ -279,9 +279,9 @@ export function ApplicationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in-0 duration-200">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-card shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4 animate-in fade-in-0 duration-200">
+      <div className="max-h-[94vh] w-full max-w-2xl overflow-y-auto overflow-x-hidden rounded-2xl sm:max-h-[90vh] bg-card shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
           <h3 className="font-serif text-lg font-semibold text-foreground">Application Details</h3>
           <button
             type="button"
@@ -293,15 +293,15 @@ export function ApplicationModal({
           </button>
         </div>
 
-        <div className="space-y-6 px-6 py-5">
+        <div className="space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-5">
           {/* Ref-style highlight card */}
-          <section className="rounded-2xl bg-gradient-to-br from-tip-peach via-tip-yellow to-tip-green p-5">
+          <section className="rounded-2xl bg-gradient-to-br from-tip-peach via-tip-yellow to-tip-green p-3.5 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <div className="font-serif text-lg font-semibold text-foreground">
+                <div className="break-all font-serif text-lg font-semibold text-foreground">
                   Ref: {app.passportNumber || "—"}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="break-words text-sm text-muted-foreground">
                   {app.visaType || "Visa"} Application · {formatCountry(app.destinationCountry)}
                 </div>
               </div>
@@ -335,7 +335,7 @@ export function ApplicationModal({
             </div>
 
             {!isEditingProfile ? (
-              <div className="mt-4 rounded-xl bg-card/70 p-4 text-sm">
+              <div className="mt-4 rounded-xl bg-card/70 p-3 text-sm sm:p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
                     {app.photoUrl ? (
@@ -345,7 +345,7 @@ export function ApplicationModal({
                       <span className="text-[10px] text-muted-foreground">No photo</span>
                     )}
                   </div>
-                  <dl className="grid flex-1 grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <dl className="grid min-w-0 flex-1 grid-cols-1 gap-x-4 gap-y-2.5 text-sm sm:grid-cols-2">
                     {[
                       ["Full Name", app.fullName],
                       ["Passport No.", app.passportNumber],
@@ -364,12 +364,12 @@ export function ApplicationModal({
                     ].map(([label, value]) => (
                       <div key={label}>
                         <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
-                        <dd className="font-medium text-foreground">{value || "—"}</dd>
+                        <dd className="break-words font-medium text-foreground">{value || "—"}</dd>
                       </div>
                     ))}
                     <div>
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">Employer / Company</dt>
-                      <dd className="mt-0.5 flex items-center gap-2 font-medium text-foreground">
+                      <dd className="mt-0.5 flex flex-wrap items-center gap-2 break-words font-medium text-foreground">
                         {app.employerLogoUrl && (
                           <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-white p-0.5">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -408,7 +408,7 @@ export function ApplicationModal({
               </div>
             ) : (
               /* --- Edit mode: profile fields + photo upload --- */
-              <div className="mt-4 rounded-xl bg-card/70 p-4 text-sm">
+              <div className="mt-4 rounded-xl bg-card/70 p-3 text-sm sm:p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <div className="flex flex-col items-center gap-2">
                     <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
@@ -573,9 +573,9 @@ export function ApplicationModal({
                   readOnly
                   value={trackingLinkUrl}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="flex-1 truncate rounded-lg border border-input bg-background px-2.5 py-1.5 font-mono text-xs text-foreground"
+                  className="w-full min-w-0 flex-1 rounded-lg border border-input bg-background px-2.5 py-1.5 font-mono text-xs text-foreground"
                 />
-                <div className="flex shrink-0 gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="outline" onClick={handleCopyLink} className="h-8 rounded-lg px-3 text-xs">
                     {linkCopied ? "Copied ✓" : "Copy"}
                   </Button>
@@ -608,7 +608,7 @@ export function ApplicationModal({
                   .map(([key, label]) => (
                     <div key={key}>
                       <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
-                      <dd className="font-medium text-foreground">{app.visaDetails[key]}</dd>
+                      <dd className="break-words font-medium text-foreground">{app.visaDetails[key]}</dd>
                     </div>
                   ))}
               </dl>
@@ -625,7 +625,7 @@ export function ApplicationModal({
                 type="datetime-local"
                 value={submittedInput}
                 onChange={(e) => setSubmittedInput(e.target.value)}
-                className="rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:w-auto"
               />
               <Button type="button" onClick={handleSaveSubmittedDate} className="h-9 rounded-xl px-4 text-sm">
                 {dateSaved ? "Saved ✓" : "Save Date"}
@@ -642,7 +642,7 @@ export function ApplicationModal({
               <select
                 value={statusSelect}
                 onChange={(e) => setStatusSelect(e.target.value as ManualStatus)}
-                className="rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground sm:w-auto"
               >
                 <option value="auto">Auto (time-based)</option>
                 <option value="0">Submitted</option>
@@ -679,7 +679,7 @@ export function ApplicationModal({
                   <div key={groupName} className="rounded-xl border border-border p-3">
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                       {renamingGroup === groupName ? (
-                        <div className="flex flex-1 items-center gap-2">
+                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                           <input
                             value={renameValue}
                             onChange={(e) => setRenameValue(e.target.value)}
@@ -703,7 +703,7 @@ export function ApplicationModal({
                         </div>
                       ) : (
                         <>
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className="min-w-0 break-words text-sm font-semibold text-foreground">
                             {groupName}{" "}
                             <span className="font-normal text-muted-foreground">({docs.length})</span>
                           </span>
@@ -736,8 +736,8 @@ export function ApplicationModal({
                           key={doc.id}
                           className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
                         >
-                          <span className="min-w-0 truncate text-foreground">{doc.name}</span>
-                          <div className="flex shrink-0 items-center gap-3">
+                          <span className="min-w-0 flex-1 basis-full break-all text-foreground sm:basis-40">{doc.name}</span>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                             <span className="text-xs text-muted-foreground">
                               {doc.addedBy === "admin" ? "Added by staff" : "From applicant"} ·{" "}
                               {formatDate(doc.addedAt)}
@@ -796,7 +796,7 @@ export function ApplicationModal({
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="e.g. Passport, Job Letter"
-                  className="rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs text-foreground"
+                  className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs text-foreground sm:w-auto"
                 />
                 <datalist id="doc-group-suggestions">
                   {DEFAULT_DOCUMENT_GROUPS.map((g) => (
@@ -842,7 +842,7 @@ export function ApplicationModal({
           </section>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3 sm:px-6 sm:py-4">
           <Button type="button" variant="outline" onClick={() => onSaveNotes(app.id, internalNotes)} className="h-9 rounded-xl px-4 text-sm">
             Save Notes
           </Button>
