@@ -30,7 +30,7 @@ export function ImmigrationNews() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <span className="text-sm font-semibold uppercase tracking-wider text-accent-foreground">
+            <span className="text-sm font-semibold uppercase tracking-wider text-accent">
               Stay informed
             </span>
             <h2 className="mt-3 text-balance font-serif text-3xl font-semibold text-foreground sm:text-4xl">
@@ -57,7 +57,7 @@ export function ImmigrationNews() {
               className="flex flex-col rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-md"
             >
               <div className="flex items-center gap-3 text-xs">
-                <span className="rounded-full bg-secondary px-2.5 py-1 font-medium text-primary">
+                <span className="rounded-sm bg-secondary px-2.5 py-1 font-medium text-primary">
                   {article.category}
                 </span>
                 <time className="text-muted-foreground">{article.date}</time>
