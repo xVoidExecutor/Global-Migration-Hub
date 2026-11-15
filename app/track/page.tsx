@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { ArrowLeft, Loader2, Search, X, Sparkles } from "lucide-react"
+import { Check, Loader2, X, Sparkles } from "lucide-react"
 import { EnquireModal } from "@/components/enquire-modal"
 import { EmployerCard } from "@/components/employer-card"
 import { PaymentSection, type PaymentCredentials } from "@/components/payment-section"
@@ -151,43 +151,25 @@ function TrackPageContent() {
         </div>
       )}
 
-      {/* Transparent glass header with the site name */}
-      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/50 backdrop-blur-xl supports-[backdrop-filter]:bg-white/40">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="Global Migration Hub home">
-            <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary shadow-md shadow-primary/20 ring-1 ring-white/60">
+      {/* Header: dark navy bar, logo + full site name (Home Affairs style) */}
+      <header className="border-b-4 border-[#00698f] bg-[#002664] text-white">
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 sm:px-6">
+          <Link href="/" className="flex items-center gap-3" aria-label="Global Migration Hub home">
+            <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-black ring-1 ring-white/30">
               <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
             </span>
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate bg-gradient-to-r from-primary via-sky-500 to-primary bg-clip-text font-serif text-lg font-bold tracking-tight text-transparent sm:text-xl">
-                Global Migration Hub
-              </span>
-              <span className="truncate text-[9px] font-medium uppercase tracking-[0.22em] text-muted-foreground sm:text-[10px]">
+            <span className="flex flex-col leading-tight">
+              <span className="whitespace-nowrap text-xl font-bold tracking-tight sm:text-2xl">Global Migration Hub</span>
+              <span className="whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.14em] text-white/80 sm:text-[11px] sm:tracking-[0.22em]">
                 Visa &amp; Immigration Consultancy
               </span>
             </span>
           </Link>
-          {result ? (
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/60 px-3 py-1.5 text-sm font-medium text-muted-foreground ring-1 ring-border/60 backdrop-blur hover:text-foreground"
-            >
-              <Search className="size-4" /> New search
-            </button>
-          ) : (
-            <Link
-              href="/"
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/60 px-3 py-1.5 text-sm font-medium text-muted-foreground ring-1 ring-border/60 backdrop-blur hover:text-foreground"
-            >
-              <ArrowLeft className="size-4" /> Back home
-            </Link>
-          )}
         </div>
       </header>
 
       {loading ? (
-        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 duration-500">
+        <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 duration-500">
           <Loader2 className="size-8 animate-spin text-primary" aria-hidden="true" />
           <p className="mt-4 text-sm text-muted-foreground">
             Checking your {expectedCountry ? `${expectedCountry} ` : ""}application status…
@@ -203,26 +185,26 @@ function TrackPageContent() {
           }}
         />
       ) : canSearch && hasSearched ? (
-        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
           <div className="flex size-16 items-center justify-center">
             <Icon3D name="alert" />
           </div>
-          <h1 className="mt-5 font-serif text-2xl font-semibold text-foreground">No application found</h1>
+          <h1 className="mt-5 text-2xl font-bold text-[#002664]">No application found</h1>
           <p className="mt-2 text-sm text-muted-foreground">{error}</p>
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="mt-6 flex h-12 w-full items-center justify-center rounded-full bg-accent px-7 text-base font-semibold text-accent-foreground transition hover:bg-accent/90"
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-sm bg-[#002664] px-7 text-base font-semibold text-white transition hover:bg-[#00698f] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#00698f]"
           >
             Try Again
           </button>
         </div>
       ) : (
-        <div className="mx-auto flex min-h-[calc(100vh-65px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-md animate-in flex-col items-center justify-center px-4 py-14 text-center fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6">
           <div className="flex size-16 items-center justify-center">
             <Icon3D name="shield" />
           </div>
-          <h1 className="mt-5 font-serif text-3xl font-semibold text-foreground">Track your application</h1>
+          <h1 className="mt-5 text-3xl font-bold text-[#002664]">Track your application</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {expectedCountry
               ? `Check your ${expectedCountry} application status using your passport/national ID and date of birth.`
@@ -231,7 +213,7 @@ function TrackPageContent() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="mt-8 flex h-12 w-full items-center justify-center rounded-full bg-accent px-7 text-base font-semibold text-accent-foreground transition hover:bg-accent/90"
+            className="mt-8 flex h-12 w-full items-center justify-center rounded-sm bg-[#002664] px-7 text-base font-semibold text-white transition hover:bg-[#00698f] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#00698f]"
           >
             Check My Status
           </button>
@@ -255,7 +237,6 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
   const stage = effectiveStage(app)
   const isRejected = stage === "rejected"
   const stageIndex = typeof stage === "number" ? stage : STAGE_LABELS.length - 1
-  const progressPercent = isRejected ? 100 : (stageIndex / (STAGE_LABELS.length - 1)) * 100
 
   const [viewDoc, setViewDoc] = useState<{ doc: AppDocument; label: string } | null>(null)
 
@@ -351,24 +332,91 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
       : []),
   ]
 
-  // If an odd number of "paired" (non-wide) cards end up in the grid, the last one
-  // is left alone in its row with an empty cell beside it. Auto-widen it instead of
-  // leaving that gap — this adapts automatically to whichever optional fields
-  // (Travel Date, Agency info, etc.) happen to be present for a given application.
-  const pairedIndices = rawDetails.reduce<number[]>((acc, d, i) => {
-    if (!d.wide) acc.push(i)
-    return acc
-  }, [])
-  const details =
-    pairedIndices.length % 2 === 1
-      ? rawDetails.map((d, i) => (i === pairedIndices[pairedIndices.length - 1] ? { ...d, wide: true } : d))
-      : rawDetails
+  const isComplete = !isRejected && stageIndex === STAGE_LABELS.length - 1
+  const statusColor = isRejected ? "border-[#b81237]" : isComplete ? "border-[#1f7a3d]" : "border-[#00698f]"
+  const statusText = isRejected ? "text-[#b81237]" : isComplete ? "text-[#1f7a3d]" : "text-[#002664]"
+
+  const infoRows: { label: string; value: string }[] = [
+    { label: "Passport number", value: app.passportNumber || "—" },
+    { label: "Date of birth", value: dobFormatted },
+    { label: "National ID", value: app.nationalId || "—" },
+    { label: "Visa type", value: app.visaType || "—" },
+    { label: "Destination country", value: app.destinationCountry ? formatCountry(app.destinationCountry) : "—" },
+    ...rawDetails.map((d) => ({ label: d.label, value: d.value })),
+  ]
 
   return (
-    <div className="relative mx-auto max-w-4xl animate-in px-4 py-10 fade-in-0 slide-in-from-bottom-4 duration-700 sm:px-6 sm:py-14">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card text-card-foreground shadow-xl">
-        <div className="relative flex flex-col items-center gap-5 p-6 text-center sm:p-8">
-          <div className="absolute right-4 top-4 hidden flex-col items-center gap-1 rounded-lg bg-background/95 p-1.5 shadow-md ring-1 ring-border sm:flex">
+    <div className="relative mx-auto max-w-4xl animate-in px-4 py-6 text-[#313131] fade-in-0 duration-500 sm:px-6 sm:py-10">
+      <nav aria-label="Breadcrumb" className="text-sm">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link href="/" className="text-[#00698f] underline underline-offset-2 hover:text-[#002664]">
+              Home
+            </Link>
+          </li>
+          <li aria-hidden="true" className="text-[#6b7280]">›</li>
+          <li>
+            <Link href="/track" className="text-[#00698f] underline underline-offset-2 hover:text-[#002664]">
+              Visa status check
+            </Link>
+          </li>
+          <li aria-hidden="true" className="text-[#6b7280]">›</li>
+          <li aria-current="page">Application details</li>
+        </ol>
+      </nav>
+
+      <h1 className="mt-5 text-3xl font-bold leading-tight text-[#002664] sm:text-4xl">Visa application status</h1>
+      <p className="mt-2 text-base text-[#4b5563]">The latest information held for this applicant.</p>
+
+      <div role="status" className={`mt-6 border-l-[6px] bg-[#f5f7fa] p-4 sm:p-5 ${statusColor}`}>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Application status</p>
+        <p className={`mt-1 text-xl font-bold sm:text-2xl ${statusText}`}>
+          {isRejected ? "Application rejected" : STAGE_LABELS[stageIndex]}
+        </p>
+      </div>
+
+      <section aria-labelledby="applicant-heading" className="mt-8 border border-[#cfd6de] bg-white">
+        <h2 id="applicant-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
+          Applicant
+        </h2>
+        <div className="flex flex-col gap-5 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+          <div className="flex shrink-0 flex-col items-start gap-2">
+            <div className="flex size-28 items-center justify-center overflow-hidden rounded-sm border border-[#cfd6de] bg-[#f5f7fa] text-2xl font-semibold text-[#002664] sm:size-32">
+              {app.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={app.photoUrl} alt={app.fullName} className="size-full object-cover" />
+              ) : (
+                <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
+              )}
+            </div>
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-[#1f7a3d]">
+              <Icon3D name="shield" className="size-5" /> Identity verified
+            </span>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Applicant name</p>
+            <p className="mt-0.5 break-words text-2xl font-bold leading-tight text-[#002664] sm:text-3xl">{app.fullName}</p>
+            {app.employerName && (
+              <div className="mt-4 flex items-center gap-3">
+                <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-[#cfd6de] bg-white p-1 sm:size-14">
+                  {app.employerLogoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
+                  ) : (
+                    <Icon3D name="building" className="size-6" />
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Employer</p>
+                  <p className="break-words text-lg font-bold leading-snug text-[#00698f] sm:text-xl">{app.employerName}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="hidden shrink-0 flex-col items-center gap-1 border border-[#cfd6de] p-1.5 sm:flex">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=88x88&margin=0&data=${encodeURIComponent(
                 typeof window !== "undefined" ? `${window.location.origin}/track` : "https://globalmigrationhub.com/track",
@@ -378,178 +426,95 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
               height={64}
               className="size-16"
             />
-            <span className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">Scan to track</span>
-          </div>
-
-          <div className="relative">
-            <div className="flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-primary/20 bg-primary/10 text-2xl font-semibold text-primary shadow-xl transition duration-500 hover:scale-105 sm:size-28">
-              {app.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={app.photoUrl} alt={app.fullName} className="size-full object-cover" />
-              ) : (
-                <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
-              )}
-            </div>
-            <span className="absolute -bottom-2 -right-2 flex size-10 items-center justify-center">
-              <span className="absolute inline-flex size-8 animate-ping rounded-full bg-tip-green/40" style={{ animationDuration: "2.5s" }} />
-              <Icon3D name="shield" className="relative size-10 drop-shadow-md" />
-            </span>
-          </div>
-
-          <div className="min-w-0 max-w-full">
-            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Applicant</p>
-            <h1 className="mt-1 break-words font-serif text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
-              {app.fullName}
-            </h1>
-            {app.employerName && (
-              <p className="mt-3 break-words font-serif text-xl font-semibold leading-snug text-primary sm:text-2xl">
-                {app.employerName}
-              </p>
-            )}
-          </div>
-
-          <div className="grid w-full grid-cols-2 gap-x-4 gap-y-4 border-t border-dashed border-border pt-5 text-left">
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Passport No.</p>
-              <p className="mt-0.5 break-all text-sm font-semibold text-foreground">{app.passportNumber || "—"}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Date of Birth</p>
-              <p className="mt-0.5 text-sm font-semibold text-foreground">{dobFormatted}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">National ID</p>
-              <p className="mt-0.5 break-all text-sm font-semibold text-foreground">{app.nationalId || "—"}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Visa Type</p>
-              <p className="mt-0.5 text-sm font-semibold text-foreground">{app.visaType || "—"}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Destination</p>
-              <p className="mt-0.5 break-words text-sm font-semibold text-foreground">
-                {app.destinationCountry ? formatCountry(app.destinationCountry) : "—"}
-              </p>
-            </div>
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-[#4b5563]">Scan to track</span>
           </div>
         </div>
+      </section>
 
-        <div className="relative border-t border-dashed border-border">
-          <span className="absolute -left-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-white" />
-          <span className="absolute -right-3 top-1/2 size-6 -translate-y-1/2 rounded-full bg-white" />
-        </div>
-
-        <div className="relative flex items-center justify-center gap-2 bg-secondary/40 px-6 py-3 text-xs font-medium text-muted-foreground sm:px-8">
-          {isRejected ? (
-            <>
-              <Icon3D name="rejected" className="size-5" /> Application Rejected
-            </>
-          ) : (
-            <>
-              <Icon3D name="check" className="size-5" /> Current Stage: {STAGE_LABELS[stageIndex]}
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-10 animate-in overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both sm:p-8" style={{ animationDelay: "150ms" }}>
-        <h2 className="mb-8 text-sm font-semibold text-foreground">Application Journey</h2>
-
-        <div className="relative">
-          <div className="absolute left-0 right-0 top-4 h-0.5 border-t-2 border-dashed border-border" />
-          <div
-            className={`absolute left-0 top-4 h-0.5 border-t-2 transition-all duration-700 ${
-              isRejected ? "border-destructive" : "border-primary"
-            }`}
-            style={{ width: `${progressPercent}%` }}
-          />
-          <div
-            className="absolute top-0 -translate-x-1/2 -translate-y-1/2 transition-all duration-700"
-            style={{ left: `${progressPercent}%` }}
-          >
-            <div
-              className={`flex size-10 items-center justify-center rounded-full border-2 bg-card shadow-md ${
-                isRejected ? "border-destructive" : "border-primary"
-              } ${!isRejected && progressPercent < 100 ? "animate-pulse" : ""}`}
-            >
-              <Icon3D name="plane" className="size-7" />
-            </div>
-          </div>
-
-          <div className="mt-10 grid grid-cols-4 gap-1.5 sm:gap-2">
-            {STAGE_LABELS.map((label, i) => {
-              const state = isRejected
-                ? i <= 2
-                  ? "done"
+      <section aria-labelledby="progress-heading" className="mt-8 border border-[#cfd6de] bg-white">
+        <h2 id="progress-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
+          Application progress
+        </h2>
+        <ol className="p-4 sm:p-6">
+          {STAGE_LABELS.map((label, i) => {
+            const state = isRejected
+              ? i <= 2
+                ? "done"
+                : i === 3
+                  ? "rejected"
                   : "upcoming"
-                : i < stageIndex
-                  ? "done"
-                  : i === stageIndex
-                    ? "current"
-                    : "upcoming"
-              return (
-                <div key={label} className="flex flex-col items-center text-center">
-                  <span className="flex size-8 items-center justify-center">
-                    <Icon3D
-                      name={state === "done" ? "check" : state === "current" ? "clock" : "pending"}
-                      className={`size-8 ${state === "upcoming" ? "opacity-70" : ""}`}
-                    />
-                  </span>
+              : i < stageIndex || (isComplete && i === stageIndex)
+                ? "done"
+                : i === stageIndex
+                  ? "current"
+                  : "upcoming"
+            const circle =
+              state === "done"
+                ? "border-[#1f7a3d] bg-[#1f7a3d] text-white"
+                : state === "current"
+                  ? "border-[#00698f] bg-white text-[#00698f]"
+                  : state === "rejected"
+                    ? "border-[#b81237] bg-[#b81237] text-white"
+                    : "border-[#cfd6de] bg-white text-[#6b7280]"
+            const caption =
+              state === "done" ? "Completed" : state === "current" ? "In progress" : state === "rejected" ? "Not approved" : "Not started"
+            return (
+              <li key={label} className="relative flex gap-4 pb-6 last:pb-0">
+                {i < STAGE_LABELS.length - 1 && (
                   <span
-                    className={`mt-2 text-[10px] font-medium leading-tight sm:text-xs ${
-                      state === "upcoming" ? "text-muted-foreground" : "text-foreground"
-                    }`}
-                  >
+                    aria-hidden="true"
+                    className={`absolute left-[15px] top-8 h-[calc(100%-2rem)] w-0.5 ${state === "done" ? "bg-[#1f7a3d]" : "bg-[#cfd6de]"}`}
+                  />
+                )}
+                <span className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${circle}`}>
+                  {state === "done" ? (
+                    <Check className="size-4" aria-hidden="true" />
+                  ) : state === "rejected" ? (
+                    <X className="size-4" aria-hidden="true" />
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+                <div className="min-w-0 pt-0.5">
+                  <p className={`text-base font-semibold ${state === "upcoming" ? "text-[#6b7280]" : "text-[#313131]"}`}>
                     {i === 3 && isRejected ? "Rejected" : label}
-                  </span>
+                  </p>
+                  <p className="text-sm text-[#4b5563]">{caption}</p>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
+              </li>
+            )
+          })}
+        </ol>
+      </section>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        {details.map(({ icon, label, value, wide }, i) => (
-          <div
-            key={label}
-            className={`flex min-w-0 animate-in items-start gap-2.5 rounded-xl border border-border bg-card p-3.5 shadow-sm fade-in-0 slide-in-from-bottom-3 fill-mode-both transition duration-500 hover:-translate-y-0.5 hover:shadow-md sm:gap-3 sm:p-4 ${
-              wide ? "col-span-2" : ""
-            }`}
-            style={{ animationDelay: `${250 + i * 45}ms` }}
-          >
-            <div className="flex size-9 shrink-0 items-center justify-center sm:size-11">
-              <Icon3D name={icon} />
+      <section aria-labelledby="info-heading" className="mt-8 border border-[#cfd6de] bg-white">
+        <h2 id="info-heading" className="border-b border-[#cfd6de] bg-[#f5f7fa] px-4 py-3 text-lg font-bold text-[#002664] sm:px-6">
+          Application information
+        </h2>
+        <dl className="px-4 sm:px-6">
+          {infoRows.map(({ label, value }) => (
+            <div key={label} className="grid grid-cols-1 gap-0.5 border-b border-[#e5e9ee] py-3 last:border-b-0 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm font-semibold text-[#313131]">{label}</dt>
+              <dd className="min-w-0 break-words text-base text-[#313131] sm:col-span-2">{value}</dd>
             </div>
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs">{label}</p>
-              <p className="break-words text-xs font-medium text-foreground sm:text-sm">{value}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </dl>
         {app.employerName && (
-          <EmployerCard
-            name={app.employerName}
-            logoUrl={app.employerLogoUrl}
-            info={app.employerInfo ?? {}}
-            className="col-span-2 animate-in fade-in-0 slide-in-from-bottom-3 fill-mode-both"
-            style={{ animationDelay: `${250 + details.length * 45}ms` }}
-          />
+          <div className="border-t border-[#cfd6de] p-4 sm:p-6">
+            <EmployerCard name={app.employerName} logoUrl={app.employerLogoUrl} info={app.employerInfo ?? {}} />
+          </div>
         )}
-      </div>
+      </section>
 
-      <div
-        className="mt-6 animate-in rounded-2xl border border-border bg-card p-6 shadow-sm fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both sm:p-8"
-        style={{ animationDelay: "350ms" }}
-      >
-        <h3 className="mb-4 text-sm font-semibold text-foreground">Documents</h3>
+      <div className="mt-8 border border-[#cfd6de] bg-white p-4 sm:p-6">
+        <h2 className="mb-4 text-lg font-bold text-[#002664]">Documents</h2>
         {app.documents.length === 0 ? (
           <p className="text-sm text-muted-foreground">No documents have been added yet.</p>
         ) : (
           <div className="space-y-7">
             {groupedDocuments.map(([groupName, docs]) => (
               <div key={groupName}>
-                <h4 className="mb-3 font-serif text-lg font-bold text-foreground sm:text-xl">{groupName}</h4>
+                <h4 className="mb-3 text-lg font-bold text-foreground sm:text-xl">{groupName}</h4>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {docs.map((doc, index) => {
                     const label = docs.length > 1 ? `${groupName} ${index + 1}` : groupName
@@ -566,10 +531,10 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 
       <PaymentSection app={app} credentials={credentials} />
 
-      <p className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
+      <div className="mt-8 flex items-start gap-3 border-l-[6px] border-[#00698f] bg-[#f0f7fa] p-4 text-sm text-[#313131]">
         <Icon3D name="shield" className="mt-0.5 size-5 shrink-0" />
-        This profile is only accessible with your correct ID number and date of birth together.
-      </p>
+        <p>This profile is only accessible with your correct ID number and date of birth together.</p>
+      </div>
 
       {viewDoc && (
         <div
@@ -577,7 +542,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           onClick={() => setViewDoc(null)}
         >
           <div
-            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-card shadow-2xl"
+            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-sm bg-card shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
@@ -618,7 +583,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           <button
             type="button"
             onClick={openNote}
-            className="animate-pop-in flex max-w-[220px] items-center gap-2 rounded-2xl border border-border bg-card px-3.5 py-2.5 text-left shadow-lg"
+            className="animate-pop-in flex max-w-[220px] items-center gap-2 rounded-sm border border-border bg-card px-3.5 py-2.5 text-left shadow-lg"
           >
             <Sparkles className="size-4 shrink-0 text-accent-foreground" aria-hidden="true" />
             <span className="text-xs font-medium text-foreground">New message from your consultant</span>
@@ -646,7 +611,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
           onClick={() => setNoteOpen(false)}
         >
           <div
-            className="w-full max-w-sm animate-in overflow-hidden rounded-t-3xl border border-border bg-card shadow-2xl fade-in-0 slide-in-from-bottom-8 duration-300 sm:rounded-3xl sm:slide-in-from-bottom-4"
+            className="w-full max-w-sm animate-in overflow-hidden rounded-t-sm border border-border bg-card shadow-2xl fade-in-0 slide-in-from-bottom-8 duration-300 sm:rounded-sm sm:slide-in-from-bottom-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border bg-primary/5 px-5 py-4">
@@ -688,7 +653,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 function DocumentThumbnail({ doc, label, onOpen }: { doc: AppDocument; label: string; onOpen: () => void }) {
   if (!doc.dataUrl) {
     return (
-      <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-3 text-center">
+      <div className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-muted/30 p-3 text-center">
         <Icon3D name="document" className="size-10" />
         <p className="text-xs font-medium leading-tight text-muted-foreground">{label}</p>
         <p className="text-[10px] text-muted-foreground">Pending upload</p>
@@ -700,7 +665,7 @@ function DocumentThumbnail({ doc, label, onOpen }: { doc: AppDocument; label: st
     <button
       type="button"
       onClick={onOpen}
-      className="group flex aspect-[3/4] flex-col overflow-hidden rounded-xl border border-border bg-secondary/20 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex aspect-[3/4] flex-col overflow-hidden rounded-sm border border-border bg-secondary/20 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative flex-1 overflow-hidden bg-muted/30">
         {isImageDataUrl(doc.dataUrl) ? (
