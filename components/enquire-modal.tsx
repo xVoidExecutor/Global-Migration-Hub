@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { X, ShieldCheck, ArrowRight, Loader2, Globe2 } from "lucide-react"
 import { ALL_COUNTRIES, COUNTRY_FLAGS, formatCountry } from "@/lib/countries"
+import { BrandMark } from "@/components/brand-logo"
 
 interface EnquireModalProps {
   country?: string
@@ -89,9 +90,7 @@ export function EnquireModal({ country, open, onClose }: EnquireModalProps) {
 
           <div className="relative px-7 pb-8 pt-8 text-center sm:px-9">
             <div className="flex items-center justify-center gap-2">
-              <span className="flex size-8 items-center justify-center overflow-hidden rounded-lg bg-primary shadow-md">
-                <img src="/icon.png" alt="" className="size-full object-cover" />
-              </span>
+              <BrandMark className="size-8" />
               <span className="font-serif text-sm font-semibold tracking-wide text-foreground">
                 Global Migration Hub
               </span>
