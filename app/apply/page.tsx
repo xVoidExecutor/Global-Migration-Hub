@@ -3,6 +3,7 @@
 import { Suspense, useRef, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import { BrandMark } from "@/components/brand-logo"
 import {
   CheckCircle2,
   ShieldCheck,
