@@ -228,7 +228,7 @@ export function NewApplicationModal({
       ...form,
       agencyCountry: form.applyingMethod === "agency" ? form.agencyCountry : "",
       agencyName: form.applyingMethod === "agency" ? form.agencyName : "",
-      agencyReferenceNo: form.applyingMethod === "agency" ? form.agencyReferenceNo : "",
+      agencyReferenceNo: "", // generated automatically on the server
       visaDetails,
       photoUrl: photo?.dataUrl ?? "",
       employerLogoUrl: employerLogo?.dataUrl ?? "",
@@ -493,16 +493,10 @@ export function NewApplicationModal({
                 </datalist>
               </div>
               <div className="col-span-2">
-                <label htmlFor="agencyReferenceNo" className="mb-1.5 block text-sm font-medium text-foreground">
-                  Agency Reference No.
-                </label>
-                <input
-                  id="agencyReferenceNo"
-                  type="text"
-                  value={form.agencyReferenceNo}
-                  onChange={(e) => update("agencyReferenceNo", e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
+                <p className="mb-1.5 text-sm font-medium text-foreground">Agency Reference No.</p>
+                <div className="rounded-md border border-dashed border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                  Auto-generated when you save (e.g. GMH-260715-A7K2QX)
+                </div>
               </div>
             </>
           )}
