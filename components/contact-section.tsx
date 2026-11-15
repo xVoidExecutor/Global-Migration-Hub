@@ -26,7 +26,7 @@ export function ContactSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-accent-foreground">
+            <span className="text-sm font-semibold uppercase tracking-wider text-accent">
               Get in touch
             </span>
             <h2 className="mt-3 text-balance font-serif text-3xl font-semibold text-foreground sm:text-4xl">
