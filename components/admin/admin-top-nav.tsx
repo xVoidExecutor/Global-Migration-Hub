@@ -7,6 +7,7 @@ import { Bell, ChevronDown, Eye, HelpCircle, LogOut, Menu, Settings } from "luci
 import { AdminDrawer } from "@/components/admin/admin-drawer"
 import { logout } from "@/lib/admin/auth"
 import type { VisitNotification } from "@/lib/admin/types"
+import { BrandMark } from "@/components/brand-logo"
 
 const POLL_INTERVAL_MS = 20_000
 
@@ -85,9 +86,7 @@ export function AdminTopNav({ adminName = "Admin User" }: { adminName?: string }
           >
             <Menu className="size-5" />
           </button>
-          <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary shadow-md shadow-primary/20 ring-1 ring-primary/20">
-            <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-          </span>
+          <BrandMark className="size-10" title="Global Migration Hub" />
           <div className="min-w-0 leading-tight">
             <div className="truncate font-serif text-sm font-bold uppercase tracking-wider text-foreground sm:text-base">
               <span className="sm:hidden">Migration Hub</span>
