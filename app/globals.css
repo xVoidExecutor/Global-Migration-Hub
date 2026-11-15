@@ -251,3 +251,65 @@ body {
   outline: 3px solid #00698f;
   outline-offset: 2px;
 }
+
+/* === Main site animations (scroll reveal, hero entrance) === */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hidden until it scrolls into view (components/reveal.tsx) */
+.gmh-reveal {
+  opacity: 0;
+}
+.gmh-reveal.is-visible {
+  animation: gmh-reveal-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+.gmh-reveal[data-reveal="down"].is-visible { animation-name: gmh-reveal-down; }
+.gmh-reveal[data-reveal="left"].is-visible { animation-name: gmh-reveal-left; }
+.gmh-reveal[data-reveal="right"].is-visible { animation-name: gmh-reveal-right; }
+.gmh-reveal[data-reveal="zoom"].is-visible { animation-name: gmh-reveal-zoom; }
+
+@keyframes gmh-reveal-up {
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gmh-reveal-down {
+  from { opacity: 0; transform: translate3d(0, -28px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gmh-reveal-left {
+  from { opacity: 0; transform: translate3d(-36px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gmh-reveal-right {
+  from { opacity: 0; transform: translate3d(36px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gmh-reveal-zoom {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+/* If JavaScript is off, never leave content invisible */
+@media (scripting: none) {
+  .gmh-reveal { opacity: 1; }
+}
+
+/* Soft light sweep across primary buttons on hover */
+.gmh-shine {
+  position: relative;
+  overflow: hidden;
+}
+.gmh-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.gmh-shine:hover::after {
+  transform: translateX(120%);
+  transition: transform 0.7s ease;
+}
