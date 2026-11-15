@@ -300,9 +300,7 @@ function ApplyPageContent() {
       <div className="border-b border-border bg-background">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5" aria-label="Global Migration Hub home">
-            <span className="flex size-9 items-center justify-center overflow-hidden rounded-xl bg-primary">
-              <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-            </span>
+            <BrandMark className="size-9" title="Global Migration Hub" />
             <span className="font-serif text-lg font-semibold leading-tight text-foreground">
               Global Migration Hub
             </span>
