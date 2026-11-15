@@ -1,4 +1,5 @@
 import { Briefcase, Building2, Plane, GraduationCap, Users, FileCheck } from "lucide-react"
+import { Reveal } from "@/components/reveal"
 
 const services = [
   {
@@ -43,7 +44,7 @@ export function WorkPermitServices() {
   return (
     <section id="services" className="scroll-mt-20 bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-sm font-semibold uppercase tracking-wider text-accent">
             What we offer
           </span>
@@ -54,15 +55,17 @@ export function WorkPermitServices() {
             Comprehensive immigration solutions designed for professionals and
             employers navigating the complexities of global mobility.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
-            <article
+          {services.map((service, i) => (
+            <Reveal
+              as="article"
               key={service.title}
-              className="group rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-md"
+              delay={(i % 3) * 120}
+              className="group rounded-xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg"
             >
-              <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <span className="flex size-12 items-center justify-center rounded-lg bg-secondary text-primary transition duration-300 group-hover:scale-110 group-hover:-rotate-6 group-hover:bg-primary group-hover:text-primary-foreground">
                 <service.icon className="size-6" aria-hidden="true" />
               </span>
               <h3 className="mt-5 font-serif text-xl font-semibold text-foreground">
@@ -71,7 +74,7 @@ export function WorkPermitServices() {
               <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
                 {service.description}
               </p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </div>
