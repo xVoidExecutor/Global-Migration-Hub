@@ -32,7 +32,7 @@ export function EmployerCard({
     <section
       aria-label="Employer details"
       style={style}
-      className={`min-w-0 overflow-hidden rounded-xl border border-border bg-card text-left shadow-sm ${className}`}
+      className={`min-w-0 overflow-hidden rounded-sm border border-[#cfd6de] bg-[#f5f7fa] text-left ${className}`}
     >
       <button
         type="button"
@@ -40,7 +40,7 @@ export function EmployerCard({
         aria-expanded={expandable ? open : undefined}
         className={`flex w-full items-center gap-2.5 p-3.5 text-left sm:gap-3 sm:p-4 ${expandable ? "cursor-pointer" : "cursor-default"}`}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 ring-1 ring-border/60 sm:size-11">
+        <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-white p-1 ring-1 ring-border/60 sm:size-11">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt={name} className="size-full object-contain" />
@@ -50,7 +50,7 @@ export function EmployerCard({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs">
-            Employer Company
+            Employer company details
           </span>
           <span className="block break-words text-xs font-medium text-foreground sm:text-sm">{name}</span>
         </span>
@@ -68,7 +68,7 @@ export function EmployerCard({
         >
           <div className="overflow-hidden">
             <div className="border-t border-dashed border-border px-4 pb-4 pt-3">
-              <p className="break-words font-serif text-base font-semibold leading-snug text-foreground">{name}</p>
+              <p className="break-words text-base font-semibold leading-snug text-foreground">{name}</p>
               {info.tradingName && info.tradingName.trim().toLowerCase() !== name.trim().toLowerCase() && (
                 <p className="text-xs text-muted-foreground">Trading as {info.tradingName}</p>
               )}
