@@ -1,12 +1,13 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Check, Loader2, X, Sparkles } from "lucide-react"
 import { EnquireModal } from "@/components/enquire-modal"
 import { EmployerCard } from "@/components/employer-card"
+import { BrandLogo } from "@/components/brand-logo"
 import { PaymentSection, type PaymentCredentials } from "@/components/payment-section"
 import { formatCountry } from "@/lib/countries"
 import { effectiveStage, STAGE_LABELS, type Application, type AppDocument } from "@/lib/admin/types"
@@ -48,6 +49,88 @@ function initials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("")
+}
+
+// useLayoutEffect on the client (no flicker), useEffect on the server (no warning)
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
+
+/**
+ * Auto-fit text: starts at `max` px and shrinks (down to `min` px) until the text fits on ONE line
+ * inside its parent box. If it still doesn't fit at `min`, it wraps onto more lines instead.
+ * Re-fits automatically when the box is resized (rotate phone, resize window) or fonts finish loading.
+ */
+function FitText({
+  children,
+  max = 14,
+  min = 10,
+  className = "",
+}: {
+  children: string
+  max?: number
+  min?: number
+  className?: string
+}) {
+  const ref = useRef<HTMLSpanElement>(null)
+
+  useIsoLayoutEffect(() => {
+    const el = ref.current
+    const box = el?.parentElement
+    if (!el || !box) return
+
+    const fit = () => {
+      const available = box.clientWidth
+      if (available <= 0) return
+      el.style.display = "inline-block"
+      el.style.whiteSpace = "nowrap"
+      let size = max
+      el.style.fontSize = `${size}px`
+      while (size > min && el.offsetWidth > available) {
+        size -= 0.5
+        el.style.fontSize = `${size}px`
+      }
+      if (el.offsetWidth > available) {
+        // too long even at the smallest size → allow wrapping
+        el.style.display = "block"
+        el.style.whiteSpace = "normal"
+      }
+    }
+
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(box)
+    document.fonts?.ready.then(fit).catch(() => {})
+    return () => observer.disconnect()
+  }, [children, max, min])
+
+  return (
+    <span ref={ref} className={`break-words ${className}`} style={{ fontSize: max }}>
+      {children}
+    </span>
+  )
+}
+
+type InfoTile = { icon: IconName; label: string; value: string; wide?: boolean }
+
+/** Pairs tiles two-per-row; a lone tile (before a wide tile, or last) is stretched so no gaps are left. */
+function arrangeTiles(tiles: InfoTile[]): InfoTile[] {
+  const out: InfoTile[] = []
+  let pending: InfoTile | null = null
+  for (const tile of tiles) {
+    if (tile.wide) {
+      if (pending) {
+        out.push({ ...pending, wide: true })
+        pending = null
+      }
+      out.push(tile)
+    } else if (pending) {
+      out.push(pending, tile)
+      pending = null
+    } else {
+      pending = tile
+    }
+  }
+  if (pending) out.push({ ...pending, wide: true })
+  return out
 }
 
 function TrackPageContent() {
@@ -155,15 +238,7 @@ function TrackPageContent() {
       <header className="border-b-4 border-[#00698f] bg-[#002664] text-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link href="/" className="flex items-center gap-3" aria-label="Global Migration Hub home">
-            <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-black ring-1 ring-white/30">
-              <img src="/icon.png" alt="Global Migration Hub" className="size-full object-cover" />
-            </span>
-            <span className="flex flex-col leading-tight">
-              <span className="whitespace-nowrap text-xl font-bold tracking-tight sm:text-2xl">Global Migration Hub</span>
-              <span className="whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.14em] text-white/80 sm:text-[11px] sm:tracking-[0.22em]">
-                Visa &amp; Immigration Consultancy
-              </span>
-            </span>
+            <BrandLogo tone="light" size="md" />
           </Link>
         </div>
       </header>
@@ -251,11 +326,11 @@ function SectionCard({
       aria-labelledby={id}
       className="mt-6 overflow-hidden rounded-2xl border border-[#dbe3ec] bg-white shadow-[0_2px_10px_rgba(0,38,100,0.06)]"
     >
-      <div className="flex items-center gap-3 border-b border-[#e5ebf2] bg-gradient-to-r from-[#eef4fb] to-white px-4 py-3.5 sm:px-6">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-sm ring-1 ring-[#dbe3ec]">
+      <div className="flex items-center gap-3 border-b border-[#e5ebf2] bg-gradient-to-r from-[#eef4fb] to-white px-4 py-3 sm:px-6">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-[#dbe3ec]">
           <Icon3D name={icon} />
         </span>
-        <h2 id={id} className="flex-1 text-lg font-bold text-[#002664] sm:text-xl">
+        <h2 id={id} className="flex-1 text-base font-bold text-[#002664] sm:text-lg">
           {title}
         </h2>
         {aside && (
@@ -273,6 +348,13 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
   const stageIndex = typeof stage === "number" ? stage : STAGE_LABELS.length - 1
 
   const [viewDoc, setViewDoc] = useState<{ doc: AppDocument; label: string } | null>(null)
+
+  // QR code (small, on the applicant's photo) → opens the public tracking page
+  const [origin, setOrigin] = useState("https://globalmigrationhub.com")
+  useEffect(() => {
+    setOrigin(window.location.origin)
+  }, [])
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodeURIComponent(`${origin}/track`)}`
 
   // --- Floating "message from your consultant" button -----------------------
   const [noteOpen, setNoteOpen] = useState(false)
@@ -332,30 +414,31 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
   const dobFormatted = app.dateOfBirth ? fmtDate(app.dateOfBirth) : "—"
   const appCode = `GMH-${app.id.replace(/\D/g, "").slice(-6) || "000000"}`
 
-  const infoRows: { icon: IconName; label: string; value: string; wide?: boolean }[] = [
-    { icon: "passport", label: "Passport number", value: app.passportNumber || "—" },
-    { icon: "calendar", label: "Date of birth", value: dobFormatted },
+  // Shown two per row (side by side). `wide` tiles take the full row.
+  const infoTiles = arrangeTiles([
+    { icon: "passport", label: "Passport No.", value: app.passportNumber || "—" },
     { icon: "id", label: "National ID", value: app.nationalId || "—" },
+    { icon: "calendar", label: "Date of birth", value: dobFormatted },
+    { icon: "globe", label: "Nationality", value: app.nationality || "—" },
     { icon: "document", label: "Visa type", value: app.visaType || "—" },
     {
       icon: "plane",
-      label: "Destination country",
+      label: "Destination",
       value: app.destinationCountry ? formatCountry(app.destinationCountry) : "—",
     },
-    { icon: "globe", label: "Nationality", value: app.nationality || "—" },
-    { icon: "passport", label: "Passport Type", value: app.passportType || "—" },
-    { icon: "mail", label: "Email", value: app.email || "—" },
+    { icon: "passport", label: "Passport type", value: app.passportType || "—" },
     { icon: "phone", label: "Phone", value: app.phone || "—" },
+    { icon: "mail", label: "Email", value: app.email || "—", wide: true },
     { icon: "id", label: "App. ID", value: appCode },
     { icon: "clock", label: "Submitted", value: fmtDate(app.submittedAt) },
-    ...(app.travelDate ? [{ icon: "calendar" as IconName, label: "Travel Date", value: fmtDate(app.travelDate) }] : []),
-    ...(app.applyingMethod === "agency" && app.agencyName
-      ? [{ icon: "building" as IconName, label: "Agency Name", value: app.agencyName }]
-      : []),
+    ...(app.travelDate ? [{ icon: "calendar" as IconName, label: "Travel date", value: fmtDate(app.travelDate) }] : []),
     ...(app.applyingMethod === "agency" && app.agencyReferenceNo
-      ? [{ icon: "id" as IconName, label: "Agency Reference No.", value: app.agencyReferenceNo }]
+      ? [{ icon: "id" as IconName, label: "Agency ref. no.", value: app.agencyReferenceNo }]
       : []),
-  ]
+    ...(app.applyingMethod === "agency" && app.agencyName
+      ? [{ icon: "building" as IconName, label: "Agency name", value: app.agencyName, wide: true }]
+      : []),
+  ])
 
   const isComplete = !isRejected && stageIndex === STAGE_LABELS.length - 1
   const bannerTone = isRejected
@@ -367,7 +450,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 
   return (
     <div className="relative mx-auto max-w-4xl animate-in px-4 py-6 text-[#313131] fade-in-0 duration-500 sm:px-6 sm:py-10">
-      <nav aria-label="Breadcrumb" className="text-sm">
+      <nav aria-label="Breadcrumb" className="text-xs sm:text-sm">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
             <Link href="/" className="text-[#00698f] underline underline-offset-2 hover:text-[#002664]">
@@ -385,20 +468,20 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
         </ol>
       </nav>
 
-      <h1 className="mt-5 text-3xl font-bold leading-tight text-[#002664] sm:text-4xl">Visa application status</h1>
-      <p className="mt-2 text-base text-[#4b5563]">The latest information held for this applicant.</p>
+      <h1 className="mt-4 text-2xl font-bold leading-tight text-[#002664] sm:text-3xl">Visa application status</h1>
+      <p className="mt-1.5 text-sm text-[#4b5563]">The latest information held for this applicant.</p>
 
       {/* Status banner */}
       <div
         role="status"
-        className={`mt-6 flex items-center gap-4 rounded-2xl bg-gradient-to-r ${bannerTone} p-4 text-white shadow-lg sm:p-5`}
+        className={`mt-5 flex items-center gap-3.5 rounded-2xl bg-gradient-to-r ${bannerTone} p-3.5 text-white shadow-lg sm:gap-4 sm:p-4`}
       >
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white p-2.5 shadow-md sm:size-16">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-md sm:size-14">
           <Icon3D name={bannerIcon} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-white/80">Application status</p>
-          <p className="mt-0.5 text-xl font-bold leading-tight sm:text-2xl">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/80">Application status</p>
+          <p className="mt-0.5 text-lg font-bold leading-tight sm:text-xl">
             {isRejected ? "Application rejected" : STAGE_LABELS[stageIndex]}
           </p>
         </div>
@@ -410,26 +493,43 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
       {/* Applicant */}
       <SectionCard id="applicant-heading" icon="user" title="Applicant">
         <div className="flex flex-col gap-5 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
-          <div className="flex shrink-0 flex-col items-start gap-2.5">
-            <div className="flex size-28 items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#eef4fb] text-2xl font-semibold text-[#002664] shadow-md ring-1 ring-[#dbe3ec] sm:size-32">
-              {app.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={app.photoUrl} alt={app.fullName} className="size-full object-cover" />
-              ) : (
-                <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
-              )}
+          <div className="flex shrink-0 flex-col items-start gap-3.5">
+            {/* Photo with a small QR code on its bottom-right corner (visible on mobile too) */}
+            <div className="relative">
+              <div className="flex size-28 items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#eef4fb] text-2xl font-semibold text-[#002664] shadow-md ring-1 ring-[#dbe3ec] sm:size-32">
+                {app.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={app.photoUrl} alt={app.fullName} className="size-full object-cover" />
+                ) : (
+                  <span>{initials(app.fullName) || <Icon3D name="user" className="size-14" />}</span>
+                )}
+              </div>
+              <div className="absolute -bottom-2.5 -right-2.5 rounded-lg border border-[#dbe3ec] bg-white p-[3px] shadow-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qrSrc}
+                  alt="QR code — scan to open the tracking page"
+                  width={44}
+                  height={44}
+                  className="size-11 sm:size-12"
+                />
+              </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f5ec] px-2.5 py-1 text-xs font-semibold text-[#1f7a3d] ring-1 ring-[#bfe3cb]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f5ec] px-2.5 py-1 text-[11px] font-semibold text-[#1f7a3d] ring-1 ring-[#bfe3cb]">
               <Icon3D name="shield" className="size-4" /> Identity verified
             </span>
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Applicant name</p>
-            <p className="mt-0.5 break-words text-2xl font-bold leading-tight text-[#002664] sm:text-3xl">{app.fullName}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4b5563]">Applicant name</p>
+            <p className="mt-0.5 min-w-0 font-bold leading-tight text-[#002664]">
+              <FitText max={26} min={16}>
+                {app.fullName}
+              </FitText>
+            </p>
             {app.employerName && (
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#e5ebf2] bg-[#f7f9fc] p-3">
-                <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#dbe3ec] bg-white p-1 sm:size-14">
+              <div className="mt-3.5 flex items-center gap-3 rounded-xl border border-[#e5ebf2] bg-[#f7f9fc] p-2.5">
+                <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#dbe3ec] bg-white p-1 sm:size-12">
                   {app.employerLogoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={app.employerLogoUrl} alt={app.employerName} className="size-full object-contain" />
@@ -437,26 +537,16 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                     <Icon3D name="building" className="size-6" />
                   )}
                 </span>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#4b5563]">Employer</p>
-                  <p className="break-words text-lg font-bold leading-snug text-[#00698f] sm:text-xl">{app.employerName}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#4b5563]">Employer</p>
+                  <p className="min-w-0 font-bold leading-snug text-[#00698f]">
+                    <FitText max={17} min={12}>
+                      {app.employerName}
+                    </FitText>
+                  </p>
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="hidden shrink-0 flex-col items-center gap-1.5 rounded-xl border border-[#dbe3ec] bg-white p-2 shadow-sm sm:flex">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=88x88&margin=0&data=${encodeURIComponent(
-                typeof window !== "undefined" ? `${window.location.origin}/track` : "https://globalmigrationhub.com/track",
-              )}`}
-              alt="QR code to return to this tracking page"
-              width={64}
-              height={64}
-              className="size-16"
-            />
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-[#4b5563]">Scan to track</span>
           </div>
         </div>
       </SectionCard>
@@ -520,10 +610,10 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                   )}
                 </span>
                 <div className={`flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 ${rowTone}`}>
-                  <p className={`text-base font-semibold ${state === "upcoming" ? "text-[#6b7280]" : "text-[#1f2937]"}`}>
+                  <p className={`text-sm font-semibold sm:text-base ${state === "upcoming" ? "text-[#6b7280]" : "text-[#1f2937]"}`}>
                     {i === 3 && isRejected ? "Rejected" : label}
                   </p>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${captionTone}`}>{caption}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${captionTone}`}>{caption}</span>
                 </div>
               </li>
             )
@@ -533,19 +623,23 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
 
       {/* Information */}
       <SectionCard id="info-heading" icon="id" title="Application information">
-        <dl className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-6">
-          {infoRows.map(({ icon, label, value }) => (
+        <dl className="grid grid-cols-2 gap-2.5 p-3.5 sm:gap-3 sm:p-6">
+          {infoTiles.map(({ icon, label, value, wide }) => (
             <div
               key={label}
-              className="flex items-center gap-3 rounded-xl border border-[#e5ebf2] bg-[#f9fbfd] p-3 transition hover:border-[#bcd9e6] hover:bg-white"
+              className={`min-w-0 rounded-xl border border-[#e5ebf2] bg-[#f9fbfd] px-3 py-2.5 transition hover:border-[#bcd9e6] hover:bg-white ${
+                wide ? "col-span-2" : ""
+              }`}
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white p-2 shadow-sm ring-1 ring-[#e0e7ef]">
-                <Icon3D name={icon} />
-              </span>
-              <div className="min-w-0">
-                <dt className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">{label}</dt>
-                <dd className="mt-0.5 min-w-0 break-words text-base font-semibold text-[#1f2937]">{value}</dd>
-              </div>
+              <dt className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#6b7280]">
+                <Icon3D name={icon} className="size-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </dt>
+              <dd className="mt-1 min-w-0 font-semibold text-[#1f2937]">
+                <FitText max={14} min={10}>
+                  {value}
+                </FitText>
+              </dd>
             </div>
           ))}
         </dl>
@@ -577,7 +671,7 @@ function ApplicantProfile({ app, credentials }: { app: Application; credentials:
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#eef4fb] p-1.5 ring-1 ring-[#dbe3ec]">
                       <Icon3D name="document" />
                     </span>
-                    <h3 className="flex-1 text-lg font-bold text-[#002664] sm:text-xl">{groupName}</h3>
+                    <h3 className="flex-1 text-base font-bold text-[#002664] sm:text-lg">{groupName}</h3>
                     <span className="rounded-full bg-[#eef4fb] px-2 py-0.5 text-xs font-semibold text-[#002664]">
                       {docs.length}
                     </span>
