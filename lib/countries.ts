@@ -178,16 +178,44 @@ export const COUNTRY_CODES: { name: string; dial: string }[] = [
 ]
 
 export const VISA_TYPES = [
-  "Work Permit Visa",
-  "Student / Study Visa",
-  "Tourist / Visit Visa",
-  "Business Visa",
-  "Medical Visa",
-  "Family / Spouse Visa",
-  "Transit Visa",
-  "Permanent Residency",
-  "Diplomatic Visa",
+  "Global Work Permit Visa",
+  "International Student Visa",
+  "Tourist & Visitor Visa",
+  "Business & Trade Visa",
+  "Medical Treatment Visa",
+  "Family Reunion Visa",
+  "Airport Transit Visa",
+  "Permanent Residency (PR) Visa",
+  "Diplomatic & Official Visa",
+  "Skilled Migration Visa",
+  "Employer Sponsored Visa",
+  "Seasonal & Agricultural Worker Visa",
+  "Working Holiday Visa",
+  "Post-Study Work Visa",
+  "Investor & Entrepreneur Visa",
+  "Dependent & Parent Visa",
+  "Hajj & Umrah Pilgrimage Visa",
+  "Sports & Cultural Exchange Visa",
 ]
+
+/** Old visa type names saved on earlier applications → their current names. */
+export const LEGACY_VISA_TYPE_NAMES: Record<string, string> = {
+  "Work Permit Visa": "Global Work Permit Visa",
+  "Student / Study Visa": "International Student Visa",
+  "Tourist / Visit Visa": "Tourist & Visitor Visa",
+  "Business Visa": "Business & Trade Visa",
+  "Medical Visa": "Medical Treatment Visa",
+  "Family / Spouse Visa": "Family Reunion Visa",
+  "Transit Visa": "Airport Transit Visa",
+  "Permanent Residency": "Permanent Residency (PR) Visa",
+  "Diplomatic Visa": "Diplomatic & Official Visa",
+}
+
+/** Use when showing a stored visa type, so old applications show the new name too. */
+export function displayVisaType(value?: string | null): string {
+  if (!value) return ""
+  return LEGACY_VISA_TYPE_NAMES[value] ?? value
+}
 
 export const PASSPORT_TYPES = [
   "Ordinary / Regular Passport",
