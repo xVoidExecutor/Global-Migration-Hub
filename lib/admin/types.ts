@@ -32,6 +32,19 @@ export const DEFAULT_DOCUMENT_GROUPS = [
   "Other Document",
 ]
 
+/** Dropdown choices for the document name in Admin (shown to the applicant as the section title). */
+export const ADMIN_DOCUMENT_NAME_OPTIONS = [
+  "Subclass 482 Visa Application",
+  "Employer Job Offer Letter",
+  "Work Authorization Permit",
+  "Visa Grant Notice",
+  "E-Medical Health Clearance",
+  "Police Character Clearance",
+]
+
+/** Sentinel value for the dropdown's "type it yourself" choice. */
+export const DOCUMENT_NAME_MANUAL = "__manual__"
+
 export type ApplyingMethod = "self" | "agency"
 
 export interface AppDocument {
@@ -78,7 +91,7 @@ export interface Application {
   // sponsorRelationship, expectedSalary — only the relevant keys are set)
   visaDetails: Record<string, string>
   travelDate: string
-  // Employer / company the applicant is going to work for (Work Permit Visa).
+  // Employer / company the applicant is going to work for (Global Work Permit Visa).
   // The applicant provides the name at submission; the logo is never uploaded
   // by the applicant — admin manually attaches it (and may correct the name)
   // after verifying the employer.
