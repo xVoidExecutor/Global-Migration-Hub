@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
                 >
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <s.icon className="size-3.5 shrink-0 opacity-80 sm:size-4" />
-                    <div className="min-w-0 truncate text-[11px] opacity-80 sm:text-xs">{s.label}</div>
+                    <div className="min-w-0 break-words text-[11px] leading-tight opacity-80 sm:text-xs">{s.label}</div>
                   </div>
                   <div className="mt-1 text-xl font-bold sm:text-2xl">{s.value}</div>
                 </div>
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
 
             <div className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                <h3 className="min-w-0 truncate font-serif text-base font-semibold text-foreground">
+                <h3 className="min-w-0 font-serif text-base font-semibold text-foreground">
                   All Applications
                   <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                     {filtered.length}
@@ -227,26 +227,26 @@ export default function AdminDashboardPage() {
                           )}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-foreground">{app.fullName}</p>
-                          <p className="truncate font-mono text-xs tracking-wide text-muted-foreground">
+                          <p className="break-words text-sm font-semibold leading-snug text-foreground">{app.fullName}</p>
+                          <p className="break-all font-mono text-xs tracking-wide text-muted-foreground">
                             {app.passportNumber || app.nationalId || "No ID on file"}
                           </p>
                         </div>
                         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
                       </div>
 
-                      <div className="flex min-w-0 items-center justify-between gap-2 border-t border-dashed border-border pt-3">
+                      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-dashed border-border pt-3">
                         <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${statusBadgeClass(app)}`}>
                           {stageLabel(app)}
                         </span>
-                        <span className="min-w-0 truncate text-right text-xs text-muted-foreground">
+                        <span className="min-w-0 break-words text-right text-xs text-muted-foreground">
                           {app.destinationCountry ? formatCountry(app.destinationCountry) : "—"}
                         </span>
                       </div>
 
-                      <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                        <span className="min-w-0 truncate">{app.visaType || "—"}</span>
-                        <span className="shrink-0">Submitted {formatDate(app.submittedAt)}</span>
+                      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                        <span className="min-w-0 break-words">{app.visaType || "—"}</span>
+                        <span>Submitted {formatDate(app.submittedAt)}</span>
                       </div>
                     </button>
                   ))}
