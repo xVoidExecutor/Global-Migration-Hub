@@ -523,10 +523,12 @@ export function ApplicationModal({
                     <div>
                       <label className="mb-1 block text-xs font-medium text-muted-foreground">Agency Reference No</label>
                       <input
-                        value={profileForm.agencyReferenceNo}
-                        onChange={(e) => setProfileForm((f) => ({ ...f, agencyReferenceNo: e.target.value }))}
-                        className="w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-sm text-foreground"
+                        value={profileForm.agencyReferenceNo || "—"}
+                        readOnly
+                        aria-readonly="true"
+                        className="w-full cursor-not-allowed rounded-lg border border-input bg-muted/40 px-2.5 py-1.5 text-sm text-muted-foreground"
                       />
+                      <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated — can&apos;t be edited.</p>
                     </div>
                   </div>
                 </div>
