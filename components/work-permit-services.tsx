@@ -44,7 +44,7 @@ export function WorkPermitServices() {
     <section id="services" className="scroll-mt-20 bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-sm font-semibold uppercase tracking-wider text-accent-foreground">
+          <span className="text-sm font-semibold uppercase tracking-wider text-accent">
             What we offer
           </span>
           <h2 className="mt-3 text-balance font-serif text-3xl font-semibold text-foreground sm:text-4xl">
