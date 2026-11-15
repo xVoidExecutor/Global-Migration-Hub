@@ -150,7 +150,7 @@ export function AdminTopNav({ adminName = "Admin User" }: { adminName?: string }
                             <Eye className="size-3.5" />
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm text-foreground">
+                            <p className="break-words text-sm text-foreground">
                               <span className="font-medium">{n.applicantName}</span> viewed their status page
                             </p>
                             <p className="text-xs text-muted-foreground">
