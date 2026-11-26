@@ -56,6 +56,29 @@ export interface AppDocument {
   addedAt: string
 }
 
+/**
+ * Extra details used only to fill the printed Application Form (Form 1401).
+ * Entered by admin in Admin → Documents → "Application form details".
+ */
+export interface ApplicationFormDetails {
+  familyName?: string
+  givenNames?: string
+  sex?: "male" | "female" | "unspecified"
+  relationship?: "married" | "engaged" | "defacto" | "separated" | "divorced" | "widowed" | "never"
+  placeOfBirthCity?: string
+  placeOfBirthCountry?: string
+  countryOfPassport?: string
+  passportIssueDate?: string
+  passportExpiryDate?: string
+  issuingAuthority?: string
+  idCountry?: string
+  addressLine1?: string
+  addressLine2?: string
+  addressLine3?: string
+  postcode?: string
+  photoUrl?: string
+}
+
 export interface Application {
   id: string
   // Step 1: Personal & Contact Information
@@ -107,6 +130,8 @@ export interface Application {
   statusNote: string
   internalNotes: string
   documents: AppDocument[]
+  // Extra details for the printed Application Form (Form 1401) — admin only.
+  formDetails?: ApplicationFormDetails
 }
 
 export type NewApplicationInput = Omit<
