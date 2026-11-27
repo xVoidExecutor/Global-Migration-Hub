@@ -8,8 +8,9 @@ import { AdminTopNav } from "@/components/admin/admin-top-nav"
 import { isLoggedIn } from "@/lib/admin/auth"
 import { getApplications, updateApplication } from "@/lib/admin/data"
 import { uploadAdminFile } from "@/lib/admin/upload"
+import { scanIdentityDocuments } from "@/lib/admin/scan-client"
 import { formatCountry } from "@/lib/countries"
-import { stageLabel, type AppDocument, type Application, type ApplicationFormDetails } from "@/lib/admin/types"
+import { stageLabel, type AppDocument, type Application, type ApplicationFormDetails, type ScannedIdentity } from "@/lib/admin/types"
 import {
   GROUP_APPLICATION_FORM,
   GROUP_CHECKLIST,
@@ -95,6 +96,7 @@ export default function AdminApplicationDocumentsPage({ params }: { params: Prom
   const [fee, setFee] = useState("")
   const [fd, setFd] = useState<ApplicationFormDetails>({})
   const photoInput = useRef<HTMLInputElement | null>(null)
+  const scanInput = useRef<HTMLInputElement | null>(null)
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({})
 
   useEffect(() => {
@@ -193,6 +195,46 @@ export default function AdminApplicationDocumentsPage({ params }: { params: Prom
 
   function setField<K extends keyof ApplicationFormDetails>(key: K, value: ApplicationFormDetails[K]) {
     setFd((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function applyScan(r: ScannedIdentity) {
+    setFd((prev) => {
+      const next: ApplicationFormDetails = { ...prev }
+      const put = (key: keyof ApplicationFormDetails, value?: string) => {
+        if (value) (next as Record<string, string | undefined>)[key] = value
+      }
+      put("fullName", r.fullName)
+      put("familyName", r.familyName)
+      put("givenNames", r.givenNames)
+      put("passportNumber", r.passportNumber)
+      put("nationalId", r.nationalId)
+      put("dateOfBirth", r.dateOfBirth)
+      put("nationality", r.nationality)
+      put("sex", r.sex || undefined)
+      put("placeOfBirthCity", r.placeOfBirthCity)
+      put("countryOfPassport", r.countryOfPassport)
+      put("passportIssueDate", r.passportIssueDate)
+      put("passportExpiryDate", r.passportExpiryDate)
+      put("issuingAuthority", r.issuingAuthority)
+      put("addressLine1", r.addressLine1)
+      put("addressLine2", r.addressLine2)
+      put("addressLine3", r.addressLine3)
+      put("postcode", r.postcode)
+      if (r.spouseName && !next.relationship) next.relationship = "married"
+      return next
+    })
+  }
+
+  function handleScan(files: FileList | null) {
+    if (!files || files.length === 0) return
+    const list = Array.from(files)
+    run("details:scan", null, async () => {
+      const result = await scanIdentityDocuments(list)
+      applyScan(result)
+      const found = Object.keys(result).length
+      if (found === 0) throw new Error("Nothing could be read. Try clearer, well-lit photos.")
+      return `Scanned ${list.length} image${list.length === 1 ? "" : "s"} and filled ${found} fields. Check them below, then press "Save details".`
+    })
   }
 
   function handleSaveDetails() {
@@ -315,11 +357,54 @@ export default function AdminApplicationDocumentsPage({ params }: { params: Prom
         <section className="mb-5 rounded-2xl border border-border bg-card p-4">
           <h2 className="font-serif text-lg font-bold text-foreground">Application form details</h2>
           <p className="mb-3 text-xs text-muted-foreground">
-            Extra details printed on the Application Form (Form 1401). Name, passport number, date of birth, national
-            ID, nationality, phone and email are taken from the application itself. Leave a box empty to keep it blank.
+            Extra details printed on the Application Form (Form 1401). Boxes marked "optional" use the application's own
+            value when left empty. Phone and email always come from the application.
           </p>
 
+          <div className="mb-4 rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3">
+            <p className="text-sm font-semibold text-foreground">Auto-fill from passport / National ID</p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Choose the photos of the passport data page and the National ID (front and back). The details are read
+              automatically and placed in the boxes below. Always check them before saving.
+            </p>
+            <button type="button" disabled={busy !== null} onClick={() => scanInput.current?.click()} className={btnPrimary}>
+              {isBusy("details:scan") ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+              {isBusy("details:scan") ? "Scanning…" : "Scan passport / NID"}
+            </button>
+            <input
+              ref={scanInput}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(event) => {
+                handleScan(event.target.files)
+                event.target.value = ""
+              }}
+            />
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">Full name (optional)</span>
+              <input value={fd.fullName ?? ""} onChange={(e) => setField("fullName", e.target.value)} placeholder={app.fullName} className={inputCls} />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">Passport number (optional)</span>
+              <input value={fd.passportNumber ?? ""} onChange={(e) => setField("passportNumber", e.target.value)} placeholder={app.passportNumber} className={inputCls} />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">National ID number (optional)</span>
+              <input value={fd.nationalId ?? ""} onChange={(e) => setField("nationalId", e.target.value)} placeholder={app.nationalId} className={inputCls} />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">Date of birth (optional)</span>
+              <input type="date" value={fd.dateOfBirth ?? ""} onChange={(e) => setField("dateOfBirth", e.target.value)} className={inputCls} />
+            </label>
+            <label className="block sm:col-span-2">
+              <span className="mb-1 block text-xs font-medium text-muted-foreground">Nationality (optional)</span>
+              <input value={fd.nationality ?? ""} onChange={(e) => setField("nationality", e.target.value)} placeholder={app.nationality} className={inputCls} />
+            </label>
             <label className="block">
               <span className="mb-1 block text-xs font-medium text-muted-foreground">Family name (optional)</span>
               <input value={fd.familyName ?? ""} onChange={(e) => setField("familyName", e.target.value)} placeholder="Auto from full name" className={inputCls} />
