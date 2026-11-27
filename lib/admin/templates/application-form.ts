@@ -181,25 +181,29 @@ export async function fillApplicationForm(
   }
 
   const fd = app.formDetails ?? {}
-  const nationality = upper(app.nationality)
+  const nationality = upper(fd.nationality || app.nationality)
+  const fullName = fd.fullName || app.fullName
+  const passportNumber = fd.passportNumber || app.passportNumber
+  const dateOfBirth = fd.dateOfBirth || app.dateOfBirth
+  const nationalId = fd.nationalId || app.nationalId
   const countryOfPassport = upper(fd.countryOfPassport) || DEMONYM_TO_COUNTRY[nationality] || nationality
 
   // Page 1 - Part A
-  const names = splitName(app.fullName, fd.familyName, fd.givenNames)
+  const names = splitName(fullName, fd.familyName, fd.givenNames)
   text(P_FAMILY, names.family)
   text(P_GIVEN, names.given, {})
-  parts(P_DOB, dateParts(app.dateOfBirth))
+  parts(P_DOB, dateParts(dateOfBirth))
   text(P_POB_CITY, upper(fd.placeOfBirthCity))
   text(P_POB_COUNTRY, upper(fd.placeOfBirthCountry) || countryOfPassport)
 
-  text(P_PASSPORT_NO, upper(app.passportNumber))
+  text(P_PASSPORT_NO, upper(passportNumber))
   text(P_COUNTRY, countryOfPassport)
   text(P_NATIONALITY, nationality)
   parts(P_ISSUE, dateParts(fd.passportIssueDate))
   parts(P_EXPIRY, dateParts(fd.passportExpiryDate))
   text(P_AUTHORITY, upper(fd.issuingAuthority))
 
-  text(P_ID_NO, upper(app.nationalId))
+  text(P_ID_NO, upper(nationalId))
   text(P_ID_COUNTRY, upper(fd.idCountry) || countryOfPassport)
 
   if (fd.sex && TICK_SEX[fd.sex]) tick(0, TICK_SEX[fd.sex])
@@ -234,7 +238,7 @@ export async function fillApplicationForm(
   parts(P_SIGN_DATE_1, today)
   parts(P_SIGN_DATE_2, today)
 
-  pdf.setTitle(`Application for a Work Permit Visa 1401 - ${clean(app.fullName)}`)
+  pdf.setTitle(`Application for a Work Permit Visa 1401 - ${clean(fullName)}`)
   return pdf.save()
 }
 
