@@ -61,6 +61,13 @@ export interface AppDocument {
  * Entered by admin in Admin → Documents → "Application form details".
  */
 export interface ApplicationFormDetails {
+  // Optional overrides — when set (manually or by "Scan passport / NID"), these are printed
+  // on the form instead of the values stored on the application itself.
+  fullName?: string
+  passportNumber?: string
+  dateOfBirth?: string
+  nationalId?: string
+  nationality?: string
   familyName?: string
   givenNames?: string
   sex?: "male" | "female" | "unspecified"
@@ -77,6 +84,28 @@ export interface ApplicationFormDetails {
   addressLine3?: string
   postcode?: string
   photoUrl?: string
+}
+
+/** What the passport / NID scanner returns (all fields optional, empty string = not found). */
+export interface ScannedIdentity {
+  fullName?: string
+  familyName?: string
+  givenNames?: string
+  passportNumber?: string
+  nationalId?: string
+  dateOfBirth?: string // YYYY-MM-DD
+  nationality?: string
+  sex?: "male" | "female" | ""
+  placeOfBirthCity?: string
+  countryOfPassport?: string
+  passportIssueDate?: string // YYYY-MM-DD
+  passportExpiryDate?: string // YYYY-MM-DD
+  issuingAuthority?: string
+  addressLine1?: string
+  addressLine2?: string
+  addressLine3?: string
+  postcode?: string
+  spouseName?: string
 }
 
 export interface Application {
